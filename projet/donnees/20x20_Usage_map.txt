@@ -1,0 +1,20 @@
+                    
+                    
+                    
+  RR                
+ RR                 
+  R               CC
+  RRR             CC
+    RRR          RR 
+       RRRRRR  RRR  
+            RRRR    
+             R      
+             R      
+              R     
+              RR    
+               RR   
+                RR  
+ CCCC            R  
+ CCCCRRRRRRRRRRRRRRR
+ CCCC               
+                    
