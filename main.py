@@ -14,7 +14,7 @@ TEST_MAP_PATH="20x20_"
 TEST_MAP_DIMENSION=(20,20)
 
 # CONFIGURATION
-USING_TEST_MAP=True
+USING_TEST_MAP=False
 USING_PLOT=True
 
 def load_usage_map(file_path):
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     cost_map = load_map(COST_MAP_PATH)
     production_map = load_map(PRODUCTION_MAP_PATH)
     usage_map = load_usage_map(USAGE_MAP_PATH)
-    distance_map = np.zeros(TEST_MAP_DIMENSION if USING_TEST_MAP else MAP_DIMENSION, dtype=int)
+    distance_map = matrice_dist(usage_map)
 
     # Plot the matrix data
     if USING_PLOT:
