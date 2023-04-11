@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.spatial.distance import cdist
+
 
 # MAP PARAMETERS
 MAP_DIMENSION=(70,170)
@@ -17,7 +19,7 @@ USING_PLOT=True
 
 def load_usage_map(file_path):
     """Load the usage map into memory
-    
+
     Args:
         file_path (str): path to the usage map file
     Information:
@@ -70,7 +72,7 @@ def configure_plot(cost_map, production_map, usage_map, distance_map):
     """
     # Create a figure with three subplots
     fig, axs = plt.subplots(2, 2, figsize=(10, 9))
-    fig.canvas.manager.set_window_title("Matrix Data Plot") 
+    fig.canvas.manager.set_window_title("Matrix Data Plot")
     # Plot each matrix in a different subplot
     axs[0][0].set_title("Cost map")
     axs[0][0].imshow(cost_map, cmap='inferno', interpolation='nearest') # Higher the costs are, the more Yellow it is
@@ -80,6 +82,18 @@ def configure_plot(cost_map, production_map, usage_map, distance_map):
     axs[1][0].imshow(usage_map, cmap='gray', interpolation='nearest')
     axs[1][1].set_title("Distance map")
     axs[1][1].imshow(distance_map, cmap='Blues', interpolation='nearest') # Higher the distance is, darker the parcel is
+def matrice_dist(usage_matrice):
+    idx_habitations = np.argwhere(usage_matrice == 2)
+
+    # trouver les distances euclidiennes entre chaque parcelle et les parcelles avec une valeur de 2 dans la matrice
+    distances = np.min(cdist(np.argwhere(usage_matrice != 2), idx_habitations), axis=1)
+
+    # reconstruire la matrice avec les distances
+    distances_mat = np.zeros_like(usage_matrice, dtype=float)
+    distances_mat[usage_matrice != 2] = distances
+    return distances_mat
+
+
 
 if __name__ == "__main__":
     """1: Loading the problem's maps"""
@@ -87,12 +101,11 @@ if __name__ == "__main__":
     production_map = load_map(PRODUCTION_MAP_PATH)
     usage_map = load_usage_map(USAGE_MAP_PATH)
     distance_map = np.zeros(TEST_MAP_DIMENSION if USING_TEST_MAP else MAP_DIMENSION, dtype=int)
-    
+
     # Plot the matrix data
     if USING_PLOT:
         configure_plot(cost_map, production_map, usage_map, distance_map)
         plt.show()
-        
+
     """2: Finding the Pareto-Optimal Frontier"""
-    
-    
+
