@@ -4,3 +4,4 @@ https://universitelibrebruxelles-my.sharepoint.com/:w:/g/personal/alexandre_bien
 ### Librairies utilisées:
 
 Numpy (pip install numpy)
+Matplotlib  (pip install matplotlib)
