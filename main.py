@@ -26,7 +26,7 @@ def load_usage_map(file_path):
         0 is for a empty parcel; 1 is for a road parcel; 2 is for inhabited parcel
     """
     map_dimension = TEST_MAP_DIMENSION if USING_TEST_MAP else MAP_DIMENSION
-    path = "./data/" + TEST_MAP_PATH + file_path if USING_TEST_MAP else "./donnees/" + file_path
+    path = "./data/" + TEST_MAP_PATH + file_path if USING_TEST_MAP else "./data/" + file_path
     # Create an empty matrix
     matrix = np.zeros(map_dimension, dtype=int)
     # Load the file
@@ -56,7 +56,7 @@ def load_map(file_path):
         file_path (str): path to the map file
     """
     map_dimension = TEST_MAP_DIMENSION if USING_TEST_MAP else MAP_DIMENSION
-    path = "./data/" + TEST_MAP_PATH + file_path if USING_TEST_MAP else "./donnees/" + file_path
+    path = "./data/" + TEST_MAP_PATH + file_path if USING_TEST_MAP else "./data/" + file_path
     # Load the file
     arr = np.loadtxt(path, dtype='str')
     # Create an empty matrix
