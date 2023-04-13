@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 from scipy.spatial.distance import cdist
 import random
 
+""" PARAMETERS  """
+
 # MAP PARAMETERS
 MAP_DIMENSION = (70, 170)
 COST_MAP_PATH = "Cost_map.txt"
@@ -21,6 +23,7 @@ TEST_MAP_DIMENSION = (20, 20)
 USING_TEST_MAP = False
 USING_PLOT = True
 
+""" HELPER FUNCTIONS """
 
 def load_usage_map(file_path):
     """Load the usage map into memory
@@ -94,17 +97,16 @@ def configure_plot(cost_map, production_map, usage_map, distance_map):
 
 
 def matrice_dist(usage_matrice):
+    # Trouver l'indice de tous les éléments correspondant à des habitations
     idx_habitations = np.argwhere(usage_matrice == 2)
     # trouver les distances euclidiennes entre chaque parcelle et les parcelles avec une valeur de 2 dans la matrice
     distances = np.min(cdist(np.argwhere(usage_matrice != 2), idx_habitations), axis=1)
-
     # reconstruire la matrice avec les distances
     distances_mat = np.zeros_like(usage_matrice, dtype=float)
     distances_mat[usage_matrice != 2] = distances
     return distances_mat
 
-
-
+""" GENETIC ALGORITHM FUNCTIONS """
 
 def generation_generator(cost_map, usage_map):
     #initialise une matrice du territoire avec que des 0
@@ -131,10 +133,42 @@ if __name__ == "__main__":
     usage_map = load_usage_map(USAGE_MAP_PATH)
     distance_map = matrice_dist(usage_map)
 
-    generation_generator(cost_map, usage_map)
     # Plot the matrix data
     if USING_PLOT:
         configure_plot(cost_map, production_map, usage_map, distance_map)
         plt.show()
 
-    """2: Finding the Pareto-Optimal Frontier"""
+    """2: INITIAL POPULATION """
+    
+    # Generate initial population randomly -> cover as much as possible the solution space
+    generation_generator(cost_map, usage_map)
+    # Evaluate initial population
+    #TODO: Fitness function -> needs to be defined (weighted sums? weighted distance?)
+    
+    """3: EVOLUTION LOOP """
+    
+    #TODO: Set termination condition -> Nb of generation and/or (No variation of the surface below frontier ?)
+
+    # while TERMINATION CONDITION
+    #   Selection:          Fitter parents give two new solutions
+    #TODO: ParentSelection Method (fitter with fitter/ fitter with worst/ ?)
+    #   Reproduction:       Crossover of the population
+    #TODO: Reproduction Method (combine/crossover data/merge/?)
+    #   Mutation:           Each new solution has a probability to suffer a random mutation
+    #TODO: Mutation Method (probability, how much? + random place)
+    #   Evaluation:         Evaluate each new child solution
+    #TODO: Use Fitness function
+    #   Natural Selection:  Keep of the fitter first half of the population
+    #TODO: Sort (is it needed to be sorted?) and eliminate the worst half of the population
+    
+    """4: Pareto Frontier"""
+    
+    # Determine the dominant solutions
+    # Plot the frontier and generate csv files
+    
+    """5: MCDA: ELECTRE or PROMETHEE"""
+    
+    # Rank the solutions from the Pareto Frontier according to ELECTRE/PROMETHEE
+    
+    """(?) 6: Variant to the problem (BONUS) (?)"""
+    
