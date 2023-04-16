@@ -151,6 +151,32 @@ def population_generator(population_size, cost_map, usage_map):
     return generation
 
 
+def reproduction(parent1, parent2):
+    # élimine les doublons
+    for sol in parent1:
+        if sol in parent2:
+            parent2.remove(sol)
+    # fusionne les deux parents en coupant les deux parents à un endroit aléatoire
+    section = np.random.randint(0, min(len(parent1), len(parent2)))
+    child1 = parent1[:section] + parent2[section:]
+    child2 = parent2[:section] + parent1[section:]
+    return child1, child2
+
+
+def mutation(solution):
+    variable_aléatoire = random.randint(0, 100)
+    if variable_aléatoire <= 10:
+        # enlève une parcelle aléatoire
+        solution.pop(np.random.randint(0, len(solution)))
+        # ajoute une parcelle aléatoire
+        new_plot_flat_index = np.random.choice(cost_map.size)
+        new_plot_index = np.unravel_index(new_plot_flat_index, cost_map.shape)
+        if usage_map[new_plot_index] == 0 and new_plot_index not in solution:
+            solution.append(new_plot_index)
+    return solution
+
+
+
 """ FITNESS FUNCTIONS """
 def compacite(solution):
     aire = len(solution)
@@ -222,29 +248,6 @@ def population_with_final_score(population_with_normalized_score):
         print(population_with_normalized_score[i][0], population_with_normalized_score[i][1] * 0.33 + population_with_normalized_score[i][2] * 0.33 + population_with_normalized_score[i][3] * 0.33)
     return population_with_final_score
 
-def reproduction(parent1, parent2):
-    # élimine les doublons
-    for sol in parent1:
-        if sol in parent2:
-            parent2.remove(sol)
-    # fusionne les deux parents en coupant les deux parents à un endroit aléatoire
-    section = np.random.randint(0, min(len(parent1), len(parent2)))
-    child1 = parent1[:section] + parent2[section:]
-    child2 = parent2[:section] + parent1[section:]
-    return child1, child2
-
-
-def mutation(solution):
-    variable_aléatoire = random.randint(0, 100)
-    if variable_aléatoire <= 10:
-        # ajoute une parcelle aléatoire
-        new_plot_flat_index = np.random.choice(cost_map.size)
-        new_plot_index = np.unravel_index(new_plot_flat_index, cost_map.shape)
-        if usage_map[new_plot_index] == 0 and new_plot_index not in solution:
-            solution.append(new_plot_index)
-        # enlève une parcelle aléatoire
-        solution.pop(np.random.randint(0, len(solution)))
-    return solution
 
 
 if __name__ == "__main__":
@@ -263,10 +266,6 @@ if __name__ == "__main__":
     """2: INITIAL POPULATION """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    '''solution = solution_generator(cost_map, usage_map)
-    while compacite(solution, usage_map) == 0.25:
-        solution = solution_generator(cost_map, usage_map)
-    '''
     ma_population = population_generator(10, cost_map, usage_map)
     population_with_final_score(population_with_normalized_score(ma_population, distance_map, ma_production_map))
     sys.exit()
