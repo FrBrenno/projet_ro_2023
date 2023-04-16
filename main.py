@@ -174,6 +174,30 @@ def production(solution, production_map):
     return np.sum(production_map[solution])
 
 
+def reproduction(parent1, parent2):
+    # élimine les doublons
+    for sol in parent1:
+        if sol in parent2:
+            parent2.remove(sol)
+    # fusionne les deux parents en coupant les deux parents à un endroit aléatoire
+    section = np.random.randint(0, min(len(parent1), len(parent2)))
+    child1 = parent1[:section] + parent2[section:]
+    child2 = parent2[:section] + parent1[section:]
+    return child1, child2
+
+
+def mutation(solution):
+    # ajoute une parcelle aléatoire
+    new_plot_flat_index = np.random.choice(cost_map.size)
+    new_plot_index = np.unravel_index(new_plot_flat_index, cost_map.shape)
+    if usage_map[new_plot_index] == 0 and new_plot_index not in solution:
+        solution.append(new_plot_index)
+    # enlève une parcelle aléatoire
+    solution.pop(np.random.randint(0, len(solution)))
+    return solution
+
+
+
 if __name__ == "__main__":
     """1: Loading the problem's maps"""
     cost_map = load_map(COST_MAP_PATH)
