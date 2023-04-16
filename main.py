@@ -151,6 +151,7 @@ def population_generator(population_size, cost_map, usage_map):
     return generation
 
 
+""" FITNESS FUNCTIONS """
 def compacite(solution):
     aire = len(solution)
     perimetre = 0
@@ -174,11 +175,12 @@ def production(solution, production_map):
     return sum(production_map[solution[i]] for i in range(len(solution)))
 
 
+""" SCORE FUNCTIONS """""
 def score_separe(solution, distance_map, production_map):
     return compacite(solution), proximite(solution, distance_map), production(solution, production_map)
 
 
-def score_normalise(generation, distance_map, production_map):
+def population_with_normalized_score(generation, distance_map, production_map):
     generation_avec_score = []
     for i in range(len(generation)):
         generation_avec_score.append((generation[i], score_separe(generation[i], distance_map, production_map)))
@@ -190,18 +192,18 @@ def score_normalise(generation, distance_map, production_map):
     max_production = max(generation_avec_score, key=lambda x: x[1][2])[1][2]
     min_production = min(generation_avec_score, key=lambda x: x[1][2])[1][2]
 
-    generation_avec_score_normalise = []
+    population_with_normalized_score = []
     for i in range(len(generation_avec_score)):
         if max_compacite == min_compacite: # si la compacité est la même pour toutes les solutions évite la division
             # par 0
-            generation_avec_score_normalise.append((generation_avec_score[i][0],
+            population_with_normalized_score.append((generation_avec_score[i][0],
                                                 1,
                                                 (generation_avec_score[i][1][1] - min_proximite) / (
                                                         max_proximite - min_proximite),
                                                 (generation_avec_score[i][1][2] - min_production) / (
                                                         max_production - min_production)))
         else:
-            generation_avec_score_normalise.append((generation_avec_score[i][0],
+            population_with_normalized_score.append((generation_avec_score[i][0],
                                                 (generation_avec_score[i][1][0] - min_compacite) / (
                                                         max_compacite - min_compacite),
                                                 (generation_avec_score[i][1][1] - min_proximite) / (
@@ -209,8 +211,16 @@ def score_normalise(generation, distance_map, production_map):
                                                 (generation_avec_score[i][1][2] - min_production) / (
                                                         max_production - min_production)))
 
-    return generation_avec_score_normalise
+    return population_with_normalized_score
 
+
+def population_with_final_score(population_with_normalized_score):
+    population_with_final_score = []
+    for i in range(len(population_with_normalized_score)):
+        population_with_final_score.append((population_with_normalized_score[i][0],
+                                        population_with_normalized_score[i][1] * 0.33 + population_with_normalized_score[i][2] * 0.33 + population_with_normalized_score[i][3] * 0.33))
+        print(population_with_normalized_score[i][0], population_with_normalized_score[i][1] * 0.33 + population_with_normalized_score[i][2] * 0.33 + population_with_normalized_score[i][3] * 0.33)
+    return population_with_final_score
 
 def reproduction(parent1, parent2):
     # élimine les doublons
@@ -257,8 +267,8 @@ if __name__ == "__main__":
     while compacite(solution, usage_map) == 0.25:
         solution = solution_generator(cost_map, usage_map)
     '''
-    ma_population = population_generator(1000, cost_map, usage_map)
-    ma_population_avec_score = score_normalise(ma_population, distance_map, ma_production_map)
+    ma_population = population_generator(10, cost_map, usage_map)
+    population_with_final_score(population_with_normalized_score(ma_population, distance_map, ma_production_map))
     sys.exit()
     # Evaluate initial population
     # TODO: Fitness function -> needs to be defined (weighted sums? weighted distance?)
