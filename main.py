@@ -12,7 +12,6 @@ MAP_COST_RATIO = 10000
 BUDGET = 500000
 random.seed(1)
 
-
 # TEST MAP PARAMETERS
 TEST_MAP_PATH = "20x20_"
 TEST_MAP_DIMENSION = (20, 20)
@@ -104,24 +103,52 @@ def matrice_dist(usage_matrice):
     return distances_mat
 
 
-
-
-def generation_generator(cost_map, usage_map):
-    #initialise une matrice du territoire avec que des 0
+def solution_generator(cost_map, usage_map):
+    # initialise une matrice du territoire avec que des 0
     bought_plot = np.zeros(MAP_DIMENSION)
-    #vérifie le buget
-    while np.sum(bought_plot)*MAP_COST_RATIO <= BUDGET:
+    # vérifie le buget
+    while np.sum(bought_plot) * MAP_COST_RATIO <= BUDGET:
         # obtenir un index aléatoire dans le tableau aplati
         idx_flat = np.random.choice(cost_map.size)
         # convertir l'index aplati en indices de ligne et de colonne
         idx = np.unravel_index(idx_flat, cost_map.shape)
-        #vérifie que c'est pas une route ni une habitation et qu'on a pas déja acheté la parcelle
+        # vérifie que c'est pas une route ni une habitation et qu'on a pas déja acheté la parcelle
         if usage_map[idx] == 0 and bought_plot[idx] == 0:
             bought_plot[idx] = cost_map[idx]
-            if np.sum(bought_plot)*MAP_COST_RATIO > BUDGET:
+            if np.sum(bought_plot) * MAP_COST_RATIO > BUDGET:
                 bought_plot[idx] = 0
                 break
+
     return bought_plot
+
+
+def solution_generator2(cost_map, usage_map):
+    bought_plot = []
+    # vérifie le buget
+    while sum(cost_map[bought_plot[i]] for i in range(len(bought_plot) - 1)) * 10000 < BUDGET:
+        # obtenir un index aléatoire dans le tableau aplati
+        new_plot_flat_index = np.random.choice(cost_map.size)
+        # convertir l'index aplati en indices de ligne et de colonne
+        new_plot_index = np.unravel_index(new_plot_flat_index, cost_map.shape)
+        # vérifie que c'est pas une route ni une habitation et qu'on a pas déja acheté la parcelle
+        if usage_map[new_plot_index] == 0 and new_plot_index not in bought_plot:
+            # ajoute l'index de la parcelle à la liste des parcelles achetées
+            bought_plot.append(new_plot_index)
+            # vérifie que le budget n'est pas dépassé
+            if sum(cost_map[bought_plot[i]] for i in range(len(bought_plot) - 1)) * 10000 > BUDGET:
+                # enlève la parcelle derrnière parcelle ajouté de la liste des parcelles achetées
+                bought_plot.pop()
+                break
+    return bought_plot
+
+
+def plot_solution(solution):
+    print(solution)
+    bought_plot = np.zeros(MAP_DIMENSION)
+    for i in range(len(solution)):
+        bought_plot[solution[i]] = 1
+    plt.imshow(bought_plot, cmap='gray', interpolation='nearest')
+    plt.show()
 
 
 if __name__ == "__main__":
@@ -131,7 +158,7 @@ if __name__ == "__main__":
     usage_map = load_usage_map(USAGE_MAP_PATH)
     distance_map = matrice_dist(usage_map)
 
-    generation_generator(cost_map, usage_map)
+    plot_solution(solution_generator2(cost_map, usage_map))
     # Plot the matrix data
     if USING_PLOT:
         configure_plot(cost_map, production_map, usage_map, distance_map)
