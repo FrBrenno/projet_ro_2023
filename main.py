@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial.distance import cdist
@@ -95,6 +97,15 @@ def configure_plot(cost_map, production_map, usage_map, distance_map):
                      interpolation='nearest')  # Higher the distance is, darker the parcel is
 
 
+def plot_solution(solution):
+    print(solution)
+    bought_plot = np.zeros(MAP_DIMENSION)
+    for i in range(len(solution)):
+        bought_plot[solution[i]] = 1
+    plt.imshow(bought_plot, cmap='gray', interpolation='nearest')
+    plt.show()
+
+
 def matrice_dist(usage_matrice):
     # Trouver l'indice de tous les éléments correspondant à des habitations
     idx_habitations = np.argwhere(usage_matrice == 2)
@@ -105,6 +116,7 @@ def matrice_dist(usage_matrice):
     distances_mat = np.zeros_like(usage_matrice, dtype=float)
     distances_mat[usage_matrice != 2] = distances
     return distances_mat
+
 
 """ GENETIC ALGORITHM FUNCTIONS """
 
@@ -129,13 +141,12 @@ def solution_generator(cost_map, usage_map):
     return bought_plot
 
 
-def plot_solution(solution):
-    print(solution)
-    bought_plot = np.zeros(MAP_DIMENSION)
-    for i in range(len(solution)):
-        bought_plot[solution[i]] = 1
-    plt.imshow(bought_plot, cmap='gray', interpolation='nearest')
-    plt.show()
+def population_generator(population_size, cost_map, usage_map):
+    generation = []
+    for i in range (population_size):
+        generation.append(solution_generator(cost_map, usage_map))
+    return generation
+
 
 
 if __name__ == "__main__":
@@ -153,8 +164,9 @@ if __name__ == "__main__":
 
     """2: INITIAL POPULATION """
 
-    # Generate initial population randomly -> cover as much as possible the solution space
-    generation_generator(cost_map, usage_map)
+    # Generate initial population randomly ⇾ cover as much as possible the solution space
+    population_generator()
+
     # Evaluate initial population
     #TODO: Fitness function -> needs to be defined (weighted sums? weighted distance?)
 
@@ -184,3 +196,6 @@ if __name__ == "__main__":
     # Rank the solutions from the Pareto Frontier according to ELECTRE/PROMETHEE
 
     """(?) 6: Variant to the problem (BONUS) (?)"""
+
+
+sys.exit()
