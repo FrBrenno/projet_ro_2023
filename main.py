@@ -139,7 +139,7 @@ def solution_generator(cost_map, usage_map):
                 # enlève la parcelle derrnière parcelle ajouté de la liste des parcelles achetées
                 bought_plot.pop()
                 break
-    print(bought_plot)
+    # print(bought_plot)
     return bought_plot
 
 
@@ -155,9 +155,9 @@ def compacite(solution):
     aire = len(solution)
     perimetre = 0
     for i in range(len(solution)):
-        if not solution.__contains__(((solution[i][0] +1), solution[i][1])):
+        if not solution.__contains__(((solution[i][0] + 1), solution[i][1])):
             perimetre += 1
-        if not solution.__contains__(((solution[i][0] -1), solution[i][1])):
+        if not solution.__contains__(((solution[i][0] - 1), solution[i][1])):
             perimetre += 1
         if not solution.__contains__(((solution[i][0]), solution[i][1] + 1)):
             perimetre += 1
@@ -167,11 +167,49 @@ def compacite(solution):
 
 
 def proximite(solution, distance_map):
-    return np.sum(distance_map[solution]) / len(solution)
+    return 1 / (sum(distance_map[solution[i]] for i in range(len(solution))) / len(solution))
 
 
 def production(solution, production_map):
-    return np.sum(production_map[solution])
+    return sum(production_map[solution[i]] for i in range(len(solution)))
+
+
+def score_separe(solution, distance_map, production_map):
+    return compacite(solution), proximite(solution, distance_map), production(solution, production_map)
+
+
+def score_normalise(generation, distance_map, production_map):
+    generation_avec_score = []
+    for i in range(len(generation)):
+        generation_avec_score.append((generation[i], score_separe(generation[i], distance_map, production_map)))
+    # normalise les scores
+    max_compacite = max(generation_avec_score, key=lambda x: x[1][0])[1][0]
+    min_compacite = min(generation_avec_score, key=lambda x: x[1][0])[1][0]
+    max_proximite = max(generation_avec_score, key=lambda x: x[1][1])[1][1]
+    min_proximite = min(generation_avec_score, key=lambda x: x[1][1])[1][1]
+    max_production = max(generation_avec_score, key=lambda x: x[1][2])[1][2]
+    min_production = min(generation_avec_score, key=lambda x: x[1][2])[1][2]
+
+    generation_avec_score_normalise = []
+    for i in range(len(generation_avec_score)):
+        if max_compacite == min_compacite: # si la compacité est la même pour toutes les solutions évite la division
+            # par 0
+            generation_avec_score_normalise.append((generation_avec_score[i][0],
+                                                1,
+                                                (generation_avec_score[i][1][1] - min_proximite) / (
+                                                        max_proximite - min_proximite),
+                                                (generation_avec_score[i][1][2] - min_production) / (
+                                                        max_production - min_production)))
+        else:
+            generation_avec_score_normalise.append((generation_avec_score[i][0],
+                                                (generation_avec_score[i][1][0] - min_compacite) / (
+                                                        max_compacite - min_compacite),
+                                                (generation_avec_score[i][1][1] - min_proximite) / (
+                                                        max_proximite - min_proximite),
+                                                (generation_avec_score[i][1][2] - min_production) / (
+                                                        max_production - min_production)))
+
+    return generation_avec_score_normalise
 
 
 def reproduction(parent1, parent2):
@@ -187,28 +225,29 @@ def reproduction(parent1, parent2):
 
 
 def mutation(solution):
-    # ajoute une parcelle aléatoire
-    new_plot_flat_index = np.random.choice(cost_map.size)
-    new_plot_index = np.unravel_index(new_plot_flat_index, cost_map.shape)
-    if usage_map[new_plot_index] == 0 and new_plot_index not in solution:
-        solution.append(new_plot_index)
-    # enlève une parcelle aléatoire
-    solution.pop(np.random.randint(0, len(solution)))
+    variable_aléatoire = random.randint(0, 100)
+    if variable_aléatoire <= 10:
+        # ajoute une parcelle aléatoire
+        new_plot_flat_index = np.random.choice(cost_map.size)
+        new_plot_index = np.unravel_index(new_plot_flat_index, cost_map.shape)
+        if usage_map[new_plot_index] == 0 and new_plot_index not in solution:
+            solution.append(new_plot_index)
+        # enlève une parcelle aléatoire
+        solution.pop(np.random.randint(0, len(solution)))
     return solution
-
 
 
 if __name__ == "__main__":
     """1: Loading the problem's maps"""
     cost_map = load_map(COST_MAP_PATH)
-    production_map = load_map(PRODUCTION_MAP_PATH)
+    ma_production_map = load_map(PRODUCTION_MAP_PATH)
     usage_map = load_usage_map(USAGE_MAP_PATH)
     distance_map = matrice_dist(usage_map)
 
-    #plot_solution(solution_generator(cost_map, usage_map))
+    # plot_solution(solution_generator(cost_map, usage_map))
     # Plot the matrix data
     if USING_PLOT:
-        configure_plot(cost_map, production_map, usage_map, distance_map)
+        configure_plot(cost_map, ma_production_map, usage_map, distance_map)
         plt.show()
 
     """2: INITIAL POPULATION """
@@ -218,7 +257,8 @@ if __name__ == "__main__":
     while compacite(solution, usage_map) == 0.25:
         solution = solution_generator(cost_map, usage_map)
     '''
-    population_generator(1000, cost_map, usage_map)
+    ma_population = population_generator(1000, cost_map, usage_map)
+    ma_population_avec_score = score_normalise(ma_population, distance_map, ma_production_map)
     sys.exit()
     # Evaluate initial population
     # TODO: Fitness function -> needs to be defined (weighted sums? weighted distance?)
@@ -249,5 +289,3 @@ if __name__ == "__main__":
     # Rank the solutions from the Pareto Frontier according to ELECTRE/PROMETHEE.
 
     """(?) 6: Variant to the problem (BONUS) (?)"""
-
-
