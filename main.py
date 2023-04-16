@@ -26,6 +26,7 @@ USING_PLOT = True
 
 """ HELPER FUNCTIONS """
 
+
 def load_usage_map(file_path):
     """Load the usage map into memory
 
@@ -138,15 +139,39 @@ def solution_generator(cost_map, usage_map):
                 # enlève la parcelle derrnière parcelle ajouté de la liste des parcelles achetées
                 bought_plot.pop()
                 break
+    print(bought_plot)
     return bought_plot
 
 
 def population_generator(population_size, cost_map, usage_map):
     generation = []
-    for i in range (population_size):
+    for i in range(population_size):
         generation.append(solution_generator(cost_map, usage_map))
+
     return generation
 
+
+def compacite(solution):
+    aire = len(solution)
+    perimetre = 0
+    for i in range(len(solution)):
+        if not solution.__contains__(((solution[i][0] +1), solution[i][1])):
+            perimetre += 1
+        if not solution.__contains__(((solution[i][0] -1), solution[i][1])):
+            perimetre += 1
+        if not solution.__contains__(((solution[i][0]), solution[i][1] + 1)):
+            perimetre += 1
+        if not solution.__contains__(((solution[i][0]), solution[i][1] - 1)):
+            perimetre += 1
+    return aire / perimetre
+
+
+def proximite(solution, distance_map):
+    return np.sum(distance_map[solution]) / len(solution)
+
+
+def production(solution, production_map):
+    return np.sum(production_map[solution])
 
 
 if __name__ == "__main__":
@@ -156,7 +181,7 @@ if __name__ == "__main__":
     usage_map = load_usage_map(USAGE_MAP_PATH)
     distance_map = matrice_dist(usage_map)
 
-    plot_solution(solution_generator(cost_map, usage_map))
+    #plot_solution(solution_generator(cost_map, usage_map))
     # Plot the matrix data
     if USING_PLOT:
         configure_plot(cost_map, production_map, usage_map, distance_map)
@@ -165,26 +190,30 @@ if __name__ == "__main__":
     """2: INITIAL POPULATION """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    population_generator()
-
+    '''solution = solution_generator(cost_map, usage_map)
+    while compacite(solution, usage_map) == 0.25:
+        solution = solution_generator(cost_map, usage_map)
+    '''
+    population_generator(1000, cost_map, usage_map)
+    sys.exit()
     # Evaluate initial population
-    #TODO: Fitness function -> needs to be defined (weighted sums? weighted distance?)
+    # TODO: Fitness function -> needs to be defined (weighted sums? weighted distance?)
 
     """3: EVOLUTION LOOP """
 
-    #TODO: Set termination condition -> Nb of generation and/or (No variation of the surface below frontier ?)
+    # TODO: Set termination condition -> Nb of generation and/or (No variation of the surface below frontier ?)
 
     # while TERMINATION CONDITION
     #   Selection:          Fitter parents give two new solutions
-    #TODO: ParentSelection Method (fitter with fitter/ fitter with worst/ ?)
+    # TODO: ParentSelection Method (fitter with fitter/ fitter with worst/ ?)
     #   Reproduction:       Crossover of the population
-    #TODO: Reproduction Method (combine/crossover data/merge/?)
+    # TODO: Reproduction Method (combine/crossover data/merge/?)
     #   Mutation:           Each new solution has a probability to suffer a random mutation
-    #TODO: Mutation Method (probability, how much? + random place)
+    # TODO: Mutation Method (probability, how much? + random place)
     #   Evaluation:         Evaluate each new child solution
-    #TODO: Use Fitness function
+    # TODO: Use Fitness function
     #   Natural Selection:  Keep of the fitter first half of the population
-    #TODO: Sort (is it needed to be sorted?) and eliminate the worst half of the population
+    # TODO: Sort (is it needed to be sorted?) and eliminate the worst half of the population
 
     """4: Pareto Frontier"""
 
@@ -193,9 +222,8 @@ if __name__ == "__main__":
 
     """5: MCDA: ELECTRE or PROMETHEE"""
 
-    # Rank the solutions from the Pareto Frontier according to ELECTRE/PROMETHEE
+    # Rank the solutions from the Pareto Frontier according to ELECTRE/PROMETHEE.
 
     """(?) 6: Variant to the problem (BONUS) (?)"""
 
 
-sys.exit()
