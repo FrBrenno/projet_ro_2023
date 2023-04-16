@@ -103,26 +103,10 @@ def matrice_dist(usage_matrice):
     return distances_mat
 
 
+
+
+
 def solution_generator(cost_map, usage_map):
-    # initialise une matrice du territoire avec que des 0
-    bought_plot = np.zeros(MAP_DIMENSION)
-    # vérifie le buget
-    while np.sum(bought_plot) * MAP_COST_RATIO <= BUDGET:
-        # obtenir un index aléatoire dans le tableau aplati
-        idx_flat = np.random.choice(cost_map.size)
-        # convertir l'index aplati en indices de ligne et de colonne
-        idx = np.unravel_index(idx_flat, cost_map.shape)
-        # vérifie que c'est pas une route ni une habitation et qu'on a pas déja acheté la parcelle
-        if usage_map[idx] == 0 and bought_plot[idx] == 0:
-            bought_plot[idx] = cost_map[idx]
-            if np.sum(bought_plot) * MAP_COST_RATIO > BUDGET:
-                bought_plot[idx] = 0
-                break
-
-    return bought_plot
-
-
-def solution_generator2(cost_map, usage_map):
     bought_plot = []
     # vérifie le buget
     while sum(cost_map[bought_plot[i]] for i in range(len(bought_plot) - 1)) * 10000 < BUDGET:
@@ -158,7 +142,7 @@ if __name__ == "__main__":
     usage_map = load_usage_map(USAGE_MAP_PATH)
     distance_map = matrice_dist(usage_map)
 
-    plot_solution(solution_generator2(cost_map, usage_map))
+    plot_solution(solution_generator(cost_map, usage_map))
     # Plot the matrix data
     if USING_PLOT:
         configure_plot(cost_map, production_map, usage_map, distance_map)
