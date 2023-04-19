@@ -175,9 +175,9 @@ def population_generator(population_size):
 
 def reproduction(parent1, parent2):
     # élimine les doublons
-    for sol in parent1:
+    """for sol in parent1:
         if parent2.__contains__(sol):
-            parent2.remove(sol)
+            parent2.remove(sol)"""
     # fusionne les deux parents en coupant les deux parents à un endroit aléatoire
     section = np.random.randint(0, min(len(parent1), len(parent2)))
     child1 = parent1[:section] + parent2[section:]
@@ -211,8 +211,10 @@ def mutation(solution):
 def selection(population):
     population_ac_score = population_with_final_score(population)
     # tri la population par score
-    sorted_population = sorted(population_ac_score, key=lambda x: x[1], reverse=True)
+    sorted_population_ac_score = sorted(population_ac_score, key=lambda x: x[1], reverse=True)
     # retourne la moitié de la population avec le meilleur score
+    for i in range(len(sorted_population_ac_score)):
+        sorted_population = [sorted_population_ac_score[i][0] for i in range(len(sorted_population_ac_score))]
     return sorted_population[:int(len(sorted_population) / 2)]
 
 
@@ -220,9 +222,13 @@ def algorithme_genetic(initial_population_size, iteration):
     initial_population = population_generator(initial_population_size)
     nouvelle_population = initial_population
     for i in range(iteration):
+        print(type(nouvelle_population[0]))
         nouvelle_population = reproduction_population(nouvelle_population)
+        print(type(nouvelle_population[0]))
         nouvelle_population = [mutation(solution) for solution in nouvelle_population]
+        print(type(nouvelle_population[0]))
         nouvelle_population = selection(nouvelle_population)
+        print(type(nouvelle_population[0]))
     return nouvelle_population
 
 
