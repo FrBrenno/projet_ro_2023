@@ -179,14 +179,10 @@ def mutation(solution):
 
 """ FITNESS FUNCTIONS """
 
-def compacite2(solution):
-    milieuX = 0
-    milieuY = 0
-    for plot in solution:
-        milieuX += plot[0]
-        milieuY += plot[1]
-    milieuX /= len(solution)
-    milieuY /= len(solution)
+
+def compacite(solution):
+    milieuX = sum(plot[0] for plot in solution) / len(solution)
+    milieuY = sum(plot[1] for plot in solution) / len(solution)
     return 1 / sum((plot[0] - milieuX) ** 2 + (plot[1] - milieuY) ** 2 for plot in solution) / len(solution)
 
 
@@ -200,7 +196,7 @@ def production(solution, production_map):
 
 """ SCORE FUNCTIONS """""
 def score_separe(solution, distance_map, production_map):
-    return compacite2(solution), proximite(solution, distance_map), production(solution, production_map)
+    return compacite(solution), proximite(solution, distance_map), production(solution, production_map)
 
 
 def population_with_separate_score(generation, distance_map, production_map):
