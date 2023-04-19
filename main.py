@@ -108,9 +108,9 @@ def plot_solution(solution):
 
 
 def plot_pareto(population_avec_score_normalise):
-    liste_compacite=[population_avec_score_normalise[i][1] for i in range(len(population_avec_score_normalise))]
-    liste_proximite=[population_avec_score_normalise[i][2] for i in range(len(population_avec_score_normalise))]
-    liste_production=[population_avec_score_normalise[i][3] for i in range(len(population_avec_score_normalise))]
+    liste_compacite=[population_avec_score_normalise[i][1] for i in range(len(population_avec_score_normalise)-1)]
+    liste_proximite=[population_avec_score_normalise[i][2] for i in range(len(population_avec_score_normalise)-1)]
+    liste_production=[population_avec_score_normalise[i][3] for i in range(len(population_avec_score_normalise)-1)]
     fig=plt.figure()
     ax=fig.add_subplot(111, projection='3d')
     ax.scatter(liste_compacite, liste_proximite, liste_production, c='r')
@@ -213,8 +213,7 @@ def selection(population):
     # tri la population par score
     sorted_population_ac_score = sorted(population_ac_score, key=lambda x: x[1], reverse=True)
     # retourne la moitié de la population avec le meilleur score
-    for i in range(len(sorted_population_ac_score)):
-        sorted_population = [sorted_population_ac_score[i][0] for i in range(len(sorted_population_ac_score))]
+    sorted_population = [sorted_population_ac_score[i][0] for i in range(len(sorted_population_ac_score))]
     return sorted_population[:int(len(sorted_population) / 2)]
 
 
@@ -222,13 +221,9 @@ def algorithme_genetic(initial_population_size, iteration):
     initial_population = population_generator(initial_population_size)
     nouvelle_population = initial_population
     for i in range(iteration):
-        print(type(nouvelle_population[0]))
         nouvelle_population = reproduction_population(nouvelle_population)
-        print(type(nouvelle_population[0]))
         nouvelle_population = [mutation(solution) for solution in nouvelle_population]
-        print(type(nouvelle_population[0]))
         nouvelle_population = selection(nouvelle_population)
-        print(type(nouvelle_population[0]))
     return nouvelle_population
 
 
