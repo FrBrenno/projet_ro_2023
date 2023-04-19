@@ -79,7 +79,7 @@ def load_map(file_path):
     return matrix
 
 
-def configure_plot(cost_map, production_map, usage_map, distance_map):
+def configure_plot():
     """ Configure a figure where the matrix data is plotted.
     """
     # Create a figure with three subplots
@@ -87,14 +87,14 @@ def configure_plot(cost_map, production_map, usage_map, distance_map):
     fig.canvas.manager.set_window_title("Matrix Data Plot")
     # Plot each matrix in a different subplot
     axs[0][0].set_title("Cost map")
-    axs[0][0].imshow(cost_map, cmap='inferno', interpolation='nearest')  # Higher the costs are, the more Yellow it is
+    axs[0][0].imshow(COST_MAP, cmap='inferno', interpolation='nearest')  # Higher the costs are, the more Yellow it is
     axs[0][1].set_title("Production map")
-    axs[0][1].imshow(production_map, cmap='Greens',
+    axs[0][1].imshow(PRODUCTION_MAP, cmap='Greens',
                      interpolation='nearest')  # Higher the productivity is, darker the green is
     axs[1][0].set_title("Usage map")
-    axs[1][0].imshow(usage_map, cmap='gray', interpolation='nearest')
+    axs[1][0].imshow(USAGE_MAP, cmap='gray', interpolation='nearest')
     axs[1][1].set_title("Distance map")
-    axs[1][1].imshow(distance_map, cmap='Blues',
+    axs[1][1].imshow(DISTANCE_MAP, cmap='Blues',
                      interpolation='nearest')  # Higher the distance is, darker the parcel is
 
 
@@ -125,35 +125,36 @@ def plot_pareto(population_avec_score_normalise):
     ax.set_zlim(0, 1.0)
     plt.show()
 
-def matrice_dist(usage_matrice):
+def matrice_dist():
     # Trouver l'indice de tous les éléments correspondant à des habitations
-    idx_habitations = np.argwhere(usage_matrice == 2)
+    idx_habitations = np.argwhere(USAGE_MAP == 2)
     # trouver les distances euclidiennes entre chaque parcelle et les parcelles avec une valeur de 2 dans la matrice
-    distances = np.min(cdist(np.argwhere(usage_matrice != 2), idx_habitations), axis=1)
+    distances = np.min(cdist(np.argwhere(USAGE_MAP != 2), idx_habitations), axis=1)
 
     # reconstruire la matrice avec les distances
-    distances_mat = np.zeros_like(usage_matrice, dtype=float)
-    distances_mat[usage_matrice != 2] = distances
+    distances_mat = np.zeros_like(USAGE_MAP, dtype=float)
+    distances_mat[USAGE_MAP != 2] = distances
     return distances_mat
+
 
 
 """ GENETIC ALGORITHM FUNCTIONS """
 
 
-def solution_generator(cost_map, usage_map):
+def solution_generator():
     bought_plot = []
     # vérifie le buget
-    while sum(cost_map[bought_plot[i]] for i in range(len(bought_plot) - 1)) * 10000 < BUDGET:
+    while sum(COST_MAP[bought_plot[i]] for i in range(len(bought_plot) - 1)) * 10000 < BUDGET:
         # obtenir un index aléatoire dans le tableau aplati
-        new_plot_flat_index = np.random.choice(cost_map.size)
+        new_plot_flat_index = np.random.choice(COST_MAP.size)
         # convertir l'index aplati en indices de ligne et de colonne
-        new_plot_index = np.unravel_index(new_plot_flat_index, cost_map.shape)
+        new_plot_index = np.unravel_index(new_plot_flat_index, COST_MAP.shape)
         # vérifie que c'est pas une route ni une habitation et qu'on a pas déja acheté la parcelle
-        if usage_map[new_plot_index] == 0 and new_plot_index not in bought_plot:
+        if USAGE_MAP[new_plot_index] == 0 and new_plot_index not in bought_plot:
             # ajoute l'index de la parcelle à la liste des parcelles achetées
             bought_plot.append(new_plot_index)
             # vérifie que le budget n'est pas dépassé
-            if sum(cost_map[bought_plot[i]] for i in range(len(bought_plot) - 1)) * 10000 > BUDGET:
+            if sum(COST_MAP[bought_plot[i]] for i in range(len(bought_plot) - 1)) * 10000 > BUDGET:
                 # enlève la parcelle derrnière parcelle ajouté de la liste des parcelles achetées
                 bought_plot.pop()
                 break
@@ -161,10 +162,10 @@ def solution_generator(cost_map, usage_map):
     return bought_plot
 
 
-def population_generator(population_size, cost_map, usage_map):
+def population_generator(population_size):
     generation = []
     for i in range(population_size):
-        generation.append(solution_generator(cost_map, usage_map))
+        generation.append(solution_generator())
 
     return generation
 
@@ -182,20 +183,20 @@ def reproduction(parent1, parent2):
 
 
 def mutation(solution):
-    variable_aléatoire = random.randint(0, 100)
-    if variable_aléatoire <= 10:
+    variable_aleatoire = random.randint(0, 100)
+    if variable_aleatoire <= 10:
         # enlève une parcelle aléatoire
         solution.pop(np.random.randint(0, len(solution)))
         # ajoute une parcelle aléatoire
-        new_plot_flat_index = np.random.choice(cost_map.size)
-        new_plot_index = np.unravel_index(new_plot_flat_index, cost_map.shape)
-        if usage_map[new_plot_index] == 0 and new_plot_index not in solution:
+        new_plot_flat_index = np.random.choice(COST_MAP.size)
+        new_plot_index = np.unravel_index(new_plot_flat_index, COST_MAP.shape)
+        if USAGE_MAP[new_plot_index] == 0 and new_plot_index not in solution:
             solution.append(new_plot_index)
     return solution
 
 
-def selection(population, distance_map, production_map):
-    sorted_population = sorted(population, key=lambda x: score_separe(x, distance_map, production_map), reverse=True)
+def selection(population):
+    sorted_population = sorted(population, key=lambda x: score_separe(x), reverse=True)
     return sorted_population[:int(len(sorted_population) / 2)]
 
 
@@ -208,30 +209,30 @@ def compacite(solution):
     return 1 / sum((plot[0] - milieuX) ** 2 + (plot[1] - milieuY) ** 2 for plot in solution) / len(solution)
 
 
-def proximite(solution, distance_map):
-    return (sum(distance_map[solution[i]] for i in range(len(solution))) / len(solution))
+def proximite(solution):
+    return (sum(DISTANCE_MAP[solution[i]] for i in range(len(solution))) / len(solution))
 
 
-def production(solution, production_map):
-    return 1/ sum(production_map[solution[i]] for i in range(len(solution)))
+def production(solution):
+    return 1/ sum(PRODUCTION_MAP[solution[i]] for i in range(len(solution)))
 
 
 """ SCORE FUNCTIONS """""
-def score_separe(solution, distance_map, production_map):
-    return compacite(solution), proximite(solution, distance_map), production(solution, production_map)
+def score_separe(solution):
+    return compacite(solution), proximite(solution), production(solution)
 
 
-def population_with_separate_score(generation, distance_map, production_map):
+def population_with_separate_score(generation):
     generation_avec_score = []
     for i in range(len(generation)):
-        generation_avec_score.append((generation[i], score_separe(generation[i], distance_map, production_map)))
+        generation_avec_score.append((generation[i], score_separe(generation[i])))
     return generation_avec_score
 
 
-def population_with_normalized_score(generation, distance_map, production_map):
+def population_with_normalized_score(generation):
     generation_avec_score = []
     for i in range(len(generation)):
-        generation_avec_score.append((generation[i], score_separe(generation[i], distance_map, production_map)))
+        generation_avec_score.append((generation[i], score_separe(generation[i])))
     # normalise les scores
     max_compacite = max(generation_avec_score, key=lambda x: x[1][0])[1][0]
     min_compacite = min(generation_avec_score, key=lambda x: x[1][0])[1][0]
@@ -277,24 +278,24 @@ def population_with_final_score(population_with_normalized_score):
 
 if __name__ == "__main__":
     """1: Loading the problem's maps"""
-    cost_map = load_map(COST_MAP_PATH)
-    ma_production_map = load_map(PRODUCTION_MAP_PATH)
-    usage_map = load_usage_map(USAGE_MAP_PATH)
-    distance_map = matrice_dist(usage_map)
+    COST_MAP = load_map(COST_MAP_PATH)
+    PRODUCTION_MAP = load_map(PRODUCTION_MAP_PATH)
+    USAGE_MAP = load_usage_map(USAGE_MAP_PATH)
+    DISTANCE_MAP = matrice_dist()
 
     # plot_solution(solution_generator(cost_map, usage_map))
     # Plot the matrix data
     if USING_PLOT:
-        configure_plot(cost_map, ma_production_map, usage_map, distance_map)
+        configure_plot()
         plt.show()
 
     """2: INITIAL POPULATION """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    ma_population = population_generator(10, cost_map, usage_map)
-    selection(ma_population, distance_map, ma_production_map)
+    ma_population = population_generator(10)
+    selection(ma_population)
     #population_with_final_score(population_with_normalized_score(ma_population, distance_map, ma_production_map))
-    population_avec_score_normalise = population_with_final_score(population_with_normalized_score(ma_population, distance_map, ma_production_map))
+    population_avec_score_normalise = population_with_final_score(population_with_normalized_score(ma_population))
     # Plot
     #plot_pareto(population_avec_score_normalise)
 
