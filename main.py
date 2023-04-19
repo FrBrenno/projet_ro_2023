@@ -107,6 +107,24 @@ def plot_solution(solution):
     plt.show()
 
 
+def plot_pareto(population_avec_score_normalise):
+    liste_compacite=[population_avec_score_normalise[i][1] for i in range(len(population_avec_score_normalise))]
+    liste_proximite=[population_avec_score_normalise[i][2] for i in range(len(population_avec_score_normalise))]
+    liste_production=[population_avec_score_normalise[i][3] for i in range(len(population_avec_score_normalise))]
+    fig=plt.figure()
+    ax=fig.add_subplot(111, projection='3d')
+    ax.scatter(liste_compacite, liste_proximite, liste_production, c='r')
+    ax.set(xticklabels=[],
+           yticklabels=[],
+           zticklabels=[])
+    ax.set_xlabel("Compacité")
+    ax.set_xlim(0, 1.0)
+    ax.set_ylabel("Proximité")
+    ax.set_ylim(0, 1.0)
+    ax.set_zlabel("Production")
+    ax.set_zlim(0, 1.0)
+    plt.show()
+
 def matrice_dist(usage_matrice):
     # Trouver l'indice de tous les éléments correspondant à des habitations
     idx_habitations = np.argwhere(usage_matrice == 2)
@@ -175,6 +193,10 @@ def mutation(solution):
             solution.append(new_plot_index)
     return solution
 
+
+def selection(population, distance_map, production_map):
+    sorted_population = sorted(population, key=lambda x: score_separe(x, distance_map, production_map), reverse=True)
+    return sorted_population[:int(len(sorted_population) / 2)]
 
 
 """ FITNESS FUNCTIONS """
@@ -246,27 +268,11 @@ def population_with_final_score(population_with_normalized_score):
     for i in range(len(population_with_normalized_score)):
         score_global = population_with_normalized_score[i][1] * 0.33 + population_with_normalized_score[i][2] * 0.33 + population_with_normalized_score[i][3] * 0.33
         population_with_final_score.append((population_with_normalized_score[i][0], score_global))
-        print(population_with_normalized_score[i][0], score_global)
+        #print(population_with_normalized_score[i][0], score_global)
     return population_with_final_score
 
 
-def plot_pareto(population_avec_score_normalise):
-    liste_compacite=[population_avec_score_normalise[i][1] for i in range(len(population_avec_score_normalise))]
-    liste_proximite=[population_avec_score_normalise[i][2] for i in range(len(population_avec_score_normalise))]
-    liste_production=[population_avec_score_normalise[i][3] for i in range(len(population_avec_score_normalise))]
-    fig=plt.figure()
-    ax=fig.add_subplot(111, projection='3d')
-    ax.scatter(liste_compacite, liste_proximite, liste_production, c='r')
-    ax.set(xticklabels=[],
-           yticklabels=[],
-           zticklabels=[])
-    ax.set_xlabel("Compacité")
-    ax.set_xlim(0, 1.0)
-    ax.set_ylabel("Proximité")
-    ax.set_ylim(0, 1.0)
-    ax.set_zlabel("Production")
-    ax.set_zlim(0, 1.0)
-    plt.show()
+
 
 
 if __name__ == "__main__":
@@ -285,11 +291,12 @@ if __name__ == "__main__":
     """2: INITIAL POPULATION """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    ma_population = population_generator(1000, cost_map, usage_map)
+    ma_population = population_generator(10, cost_map, usage_map)
+    selection(ma_population, distance_map, ma_production_map)
     #population_with_final_score(population_with_normalized_score(ma_population, distance_map, ma_production_map))
-    population_avec_score_normalise = population_with_normalized_score(ma_population, distance_map, ma_production_map)
+    population_avec_score_normalise = population_with_final_score(population_with_normalized_score(ma_population, distance_map, ma_production_map))
     # Plot
-    plot_pareto()
+    #plot_pareto(population_avec_score_normalise)
 
     sys.exit()
     # Evaluate initial population
