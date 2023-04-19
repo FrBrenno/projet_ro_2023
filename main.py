@@ -222,17 +222,17 @@ def score_separe(solution):
     return compacite(solution), proximite(solution), production(solution)
 
 
-def population_with_separate_score(generation):
+def population_with_separate_score(population):
     generation_avec_score = []
-    for i in range(len(generation)):
-        generation_avec_score.append((generation[i], score_separe(generation[i])))
+    for i in range(len(population)):
+        generation_avec_score.append((population[i], score_separe(population[i])))
     return generation_avec_score
 
 
-def population_with_normalized_score(generation):
+def population_with_normalized_score(population):
     generation_avec_score = []
-    for i in range(len(generation)):
-        generation_avec_score.append((generation[i], score_separe(generation[i])))
+    for i in range(len(population)):
+        generation_avec_score.append((population[i], score_separe(population[i])))
     # normalise les scores
     max_compacite = max(generation_avec_score, key=lambda x: x[1][0])[1][0]
     min_compacite = min(generation_avec_score, key=lambda x: x[1][0])[1][0]
@@ -263,12 +263,12 @@ def population_with_normalized_score(generation):
     return population_with_normalized_score
 
 
-def population_with_final_score(population_with_normalized_score):
+def population_with_final_score(population):
+    population_with_score_normalized = population_with_normalized_score(population)
     population_with_final_score = []
-    score_global = 0
-    for i in range(len(population_with_normalized_score)):
-        score_global = population_with_normalized_score[i][1] * 0.33 + population_with_normalized_score[i][2] * 0.33 + population_with_normalized_score[i][3] * 0.33
-        population_with_final_score.append((population_with_normalized_score[i][0], score_global))
+    for i in range(len(population_with_score_normalized)):
+        score_global = population_with_score_normalized[i][1] * 0.33 + population_with_score_normalized[i][2] * 0.33 + population_with_score_normalized[i][3] * 0.33
+        population_with_final_score.append((population_with_score_normalized[i][0], score_global))
         #print(population_with_normalized_score[i][0], score_global)
     return population_with_final_score
 
