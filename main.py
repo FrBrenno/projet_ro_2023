@@ -125,6 +125,7 @@ def plot_pareto(population_avec_score_normalise):
     ax.set_zlim(0, 1.0)
     plt.show()
 
+
 def matrice_dist():
     # Trouver l'indice de tous les éléments correspondant à des habitations
     idx_habitations = np.argwhere(USAGE_MAP == 2)
@@ -137,6 +138,8 @@ def matrice_dist():
     return distances_mat
 
 
+def cost_bought_plot(bought_plot):
+    return sum(COST_MAP[bought_plot[i]] for i in range(len(bought_plot) - 1)) * 10000
 
 """ GENETIC ALGORITHM FUNCTIONS """
 
@@ -144,7 +147,7 @@ def matrice_dist():
 def solution_generator():
     bought_plot = []
     # vérifie le buget
-    while sum(COST_MAP[bought_plot[i]] for i in range(len(bought_plot) - 1)) * 10000 < BUDGET:
+    while cost_bought_plot(bought_plot) < BUDGET:
         # obtenir un index aléatoire dans le tableau aplati
         new_plot_flat_index = np.random.choice(COST_MAP.size)
         # convertir l'index aplati en indices de ligne et de colonne
@@ -154,12 +157,12 @@ def solution_generator():
             # ajoute l'index de la parcelle à la liste des parcelles achetées
             bought_plot.append(new_plot_index)
             # vérifie que le budget n'est pas dépassé
-            if sum(COST_MAP[bought_plot[i]] for i in range(len(bought_plot) - 1)) * 10000 > BUDGET:
+            if cost_bought_plot(bought_plot) > BUDGET:
                 # enlève la parcelle derrnière parcelle ajouté de la liste des parcelles achetées
                 bought_plot.pop()
                 break
-    # print(bought_plot)
     return bought_plot
+
 
 
 def population_generator(population_size):
@@ -173,18 +176,28 @@ def population_generator(population_size):
 def reproduction(parent1, parent2):
     # élimine les doublons
     for sol in parent1:
-        if sol in parent2:
+        if parent2.__contains__(sol):
             parent2.remove(sol)
     # fusionne les deux parents en coupant les deux parents à un endroit aléatoire
     section = np.random.randint(0, min(len(parent1), len(parent2)))
     child1 = parent1[:section] + parent2[section:]
     child2 = parent2[:section] + parent1[section:]
+
     return child1, child2
 
 
+def reproduction_population(population):
+    for i in range(0, len(population), 2):
+        parent1 = population[i]
+        parent2 = population[i + 1]
+        child1, child2 = reproduction(parent1, parent2)
+        population.append(child1)
+        population.append(child2)
+    return population
+
 def mutation(solution):
     variable_aleatoire = random.randint(0, 100)
-    if variable_aleatoire <= 10:
+    if variable_aleatoire <= 2:
         # enlève une parcelle aléatoire
         solution.pop(np.random.randint(0, len(solution)))
         # ajoute une parcelle aléatoire
@@ -196,8 +209,22 @@ def mutation(solution):
 
 
 def selection(population):
-    sorted_population = sorted(population, key=lambda x: score_separe(x), reverse=True)
+    population_ac_score = population_with_final_score(population)
+    # tri la population par score
+    sorted_population = sorted(population_ac_score, key=lambda x: x[1], reverse=True)
+    # retourne la moitié de la population avec le meilleur score
     return sorted_population[:int(len(sorted_population) / 2)]
+
+
+def algorithme_genetic(initial_population_size, iteration):
+    initial_population = population_generator(initial_population_size)
+    nouvelle_population = initial_population
+    for i in range(iteration):
+        nouvelle_population = reproduction_population(nouvelle_population)
+        nouvelle_population = [mutation(solution) for solution in nouvelle_population]
+        nouvelle_population = selection(nouvelle_population)
+    return nouvelle_population
+
 
 
 """ FITNESS FUNCTIONS """
@@ -243,22 +270,13 @@ def population_with_normalized_score(population):
 
     population_with_normalized_score = []
     for i in range(len(generation_avec_score)):
-        if max_compacite == min_compacite: # si la compacité est la même pour toutes les solutions évite la division
-            # par 0
-            population_with_normalized_score.append((generation_avec_score[i][0],
-                                                1,
-                                                (generation_avec_score[i][1][1] - min_proximite) / (
-                                                        max_proximite - min_proximite),
-                                                (generation_avec_score[i][1][2] - min_production) / (
-                                                        max_production - min_production)))
-        else:
-            population_with_normalized_score.append((generation_avec_score[i][0],
-                                                (generation_avec_score[i][1][0] - min_compacite) / (
-                                                        max_compacite - min_compacite),
-                                                (generation_avec_score[i][1][1] - min_proximite) / (
-                                                        max_proximite - min_proximite),
-                                                (generation_avec_score[i][1][2] - min_production) / (
-                                                        max_production - min_production)))
+        population_with_normalized_score.append((generation_avec_score[i][0],
+                                            (generation_avec_score[i][1][0] - min_compacite) / (
+                                                    max_compacite - min_compacite),
+                                            (generation_avec_score[i][1][1] - min_proximite) / (
+                                                    max_proximite - min_proximite),
+                                            (generation_avec_score[i][1][2] - min_production) / (
+                                                    max_production - min_production)))
 
     return population_with_normalized_score
 
@@ -269,7 +287,6 @@ def population_with_final_score(population):
     for i in range(len(population_with_score_normalized)):
         score_global = population_with_score_normalized[i][1] * 0.33 + population_with_score_normalized[i][2] * 0.33 + population_with_score_normalized[i][3] * 0.33
         population_with_final_score.append((population_with_score_normalized[i][0], score_global))
-        #print(population_with_normalized_score[i][0], score_global)
     return population_with_final_score
 
 
@@ -292,10 +309,10 @@ if __name__ == "__main__":
     """2: INITIAL POPULATION """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    ma_population = population_generator(10)
-    selection(ma_population)
+    population_reproduite = algorithme_genetic(200, 200)
+    plot_pareto(population_reproduite)
     #population_with_final_score(population_with_normalized_score(ma_population, distance_map, ma_production_map))
-    population_avec_score_normalise = population_with_final_score(population_with_normalized_score(ma_population))
+    #population_avec_score_normalise = population_with_final_score(population_with_normalized_score(ma_population))
     # Plot
     #plot_pareto(population_avec_score_normalise)
 
