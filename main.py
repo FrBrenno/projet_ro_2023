@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.spatial.distance import cdist
 import random
 import copy
+from tqdm import tqdm
 """ PARAMETERS  """
 
 # MAP PARAMETERS
@@ -112,9 +113,9 @@ def plot_solution(solution):
 
 def plot_pareto(population):
     population_avec_score_normalise = population_with_normalized_score(population)
-    liste_compacite=[population_avec_score_normalise[i][1] for i in range(len(population_avec_score_normalise)-1)]
-    liste_proximite=[population_avec_score_normalise[i][2] for i in range(len(population_avec_score_normalise)-1)]
-    liste_production=[population_avec_score_normalise[i][3] for i in range(len(population_avec_score_normalise)-1)]
+    liste_compacite=[population_avec_score_normalise[i][1] for i in range(len(population_avec_score_normalise))]
+    liste_proximite=[population_avec_score_normalise[i][2] for i in range(len(population_avec_score_normalise))]
+    liste_production=[population_avec_score_normalise[i][3] for i in range(len(population_avec_score_normalise))]
 
     fig=plt.figure()
     ax=fig.add_subplot(111, projection='3d')
@@ -207,11 +208,10 @@ def reproduction_population(population):
     return population
 
 
-
 def mutation_population(population):
     nouvelle_solution_mutee = []
     for i in range(len(population)):
-        solution_copie = population[i].copy()
+        solution_copie = copy.deepcopy(population[i])
         variable_aleatoire = random.randint(0, 100)
         if variable_aleatoire <= 20:
             # enlève une parcelle aléatoire
@@ -219,10 +219,15 @@ def mutation_population(population):
             # ajoute une parcelle aléatoire
             new_plot_flat_index = np.random.choice(COST_MAP.size)
             new_plot_index = np.unravel_index(new_plot_flat_index, COST_MAP.shape)
-            while USAGE_MAP[new_plot_index] != 0 or new_plot_index in solution_copie:
+            i = 0
+            while (USAGE_MAP[new_plot_index] != 0 or new_plot_index in solution_copie or cost_bought_plot(solution_copie) > BUDGET) and i < 5:
+                i += 1
                 new_plot_flat_index = np.random.choice(COST_MAP.size)
                 new_plot_index = np.unravel_index(new_plot_flat_index, COST_MAP.shape)
-            solution_copie.append(new_plot_index)
+                solution_copie.append(new_plot_index)
+
+            while cost_bought_plot(solution_copie) > BUDGET:
+                solution_copie.pop(np.random.randint(0, len(solution_copie)))
             nouvelle_solution_mutee.append(solution_copie)
 
 
@@ -243,12 +248,10 @@ def selection(population, population_size):
 def algorithme_genetic(initial_population_size, iteration):
     initial_population = population_generator(initial_population_size)
     nouvelle_population = initial_population
-    for i in range(iteration):
-        print("iteration: ", i)
-        print("meilleur score: ", population_with_final_score(nouvelle_population)[0][1], nouvelle_population[0])
-        print("pire score: ", population_with_final_score(nouvelle_population)[-1][1])
+    for i in tqdm(range(iteration)):
         nouvelle_population = mutation_population(nouvelle_population)
         nouvelle_population = selection(nouvelle_population, initial_population_size)
+    print("cost: ", cost_bought_plot(nouvelle_population[0]))
     plot_solution(nouvelle_population[0])
     plot_pareto(nouvelle_population)
     return nouvelle_population
@@ -261,11 +264,11 @@ def algorithme_genetic(initial_population_size, iteration):
 def compacite(solution):
     milieuX = sum(plot[0] for plot in solution) / len(solution)
     milieuY = sum(plot[1] for plot in solution) / len(solution)
-    return 1 / sum((plot[0] - milieuX) ** 2 + (plot[1] - milieuY) ** 2 for plot in solution) / len(solution)
+    return 1 / (sum((plot[0] - milieuX) ** 2 + (plot[1] - milieuY) ** 2 for plot in solution)) / len(solution)
 
 
 def proximite(solution):
-    return (sum(DISTANCE_MAP[solution[i]] for i in range(len(solution))) / len(solution))
+    return sum(DISTANCE_MAP[solution[i]] for i in range(len(solution))) / len(solution)
 
 
 def production(solution):
@@ -315,7 +318,7 @@ def population_with_final_score(population):
     population_with_score_normalized = population_with_normalized_score(population)
     population_with_final_score = []
     for i in range(len(population_with_score_normalized)):
-        score_global = population_with_score_normalized[i][1] * 0.7 + population_with_score_normalized[i][2] * 0.15 + population_with_score_normalized[i][3] * 0.15
+        score_global = population_with_score_normalized[i][1] * 0.33 + population_with_score_normalized[i][2] * 0.33 + population_with_score_normalized[i][3] * 0.33
         population_with_final_score.append((population_with_score_normalized[i][0], score_global))
     return population_with_final_score
 
@@ -342,7 +345,7 @@ if __name__ == "__main__":
 
     #une_population = population_generator(200)
     #plot_pareto(une_population)
-    population_amelioree = algorithme_genetic(100, 500)
+    population_amelioree = algorithme_genetic(300, 1000)
 
     #population_reproduite = algorithme_genetic(200, 200)
     #plot_pareto(population_reproduite)
