@@ -22,7 +22,7 @@ TEST_MAP_PATH = "20x20_"
 TEST_MAP_DIMENSION = (20, 20)
 
 # CONFIGURATION
-USING_TEST_MAP = True
+USING_TEST_MAP = False
 USING_DATA_PLOT = False
 USE_EVOLUTION_LOOP = True
 
@@ -248,7 +248,7 @@ def mutation_population(population):
         solution_copie = copy.deepcopy(population[i])
         # Probabilité de 5% de mutation sur une solution
         variable_aleatoire = random.randint(0, 100)
-        if variable_aleatoire <= 20:
+        if variable_aleatoire <= 100:
             # enlève une parcelle aléatoire
             solution_copie.pop(np.random.randint(0, len(solution_copie)))
             # ajoute une parcelle aléatoire
@@ -273,6 +273,10 @@ def mutation_population(population):
     population.extend(nouvelle_solution_mutee)
     return population
 
+
+
+def mutation_population2(population):
+    pass
 
 def selection(population, population_size):
     """ Selects the first half of the most optimal solutions in the current population
@@ -299,13 +303,16 @@ def algorithme_genetic(initial_population_size, iteration):
     initial_population = population_generator(initial_population_size)
     nouvelle_population = initial_population
     for i in tqdm(range(iteration)):
-        nouvelle_population = reproduction_population(nouvelle_population)
+        #nouvelle_population = reproduction_population(nouvelle_population)
         nouvelle_population = mutation_population(nouvelle_population)
         nouvelle_population = selection(
             nouvelle_population, initial_population_size)
     print(" Solution Cost: € {:,}".format(
         cost_bought_plot(nouvelle_population[0])))
     plot_solution(nouvelle_population[0])
+    print(" Solution Compacity: {:,}".format(compacite(nouvelle_population[0])))
+    plot_solution(nouvelle_population[1])
+    print(" Solution Compacity: {:,}".format(compacite(nouvelle_population[1])))
     plot_pareto(nouvelle_population)
     return nouvelle_population
 
@@ -322,7 +329,7 @@ def compacite(solution):
     milieuX = sum(plot[0] for plot in solution) / len(solution)
     milieuY = sum(plot[1] for plot in solution) / len(solution)
     # L'inverse afin d'avoir un critère à minimiser
-    return 1 / (sum((plot[0] - milieuX) ** 2 + (plot[1] - milieuY) ** 2 for plot in solution)) / len(solution)
+    return  sum((plot[0] - milieuX) ** 2 + (plot[1] - milieuY) ** 2 for plot in solution)
 
 
 def proximite(solution):
