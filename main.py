@@ -1,9 +1,9 @@
-import math
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy.spatial.distance import cdist
-import random
 import copy
+import random
+
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.spatial.distance import cdist
 from tqdm import tqdm
 
 """ PARAMETERS  """
@@ -128,6 +128,9 @@ def plot_solution(solution):
 def plot_pareto(population):
     population_avec_score_normalise = population_with_normalized_score(
         population)
+    pareto_frontier, population_avec_score_normalise = get_pareto_frontier(population_avec_score_normalise)
+    
+    
     liste_compacite = [population_avec_score_normalise[i][1]
                        for i in range(len(population_avec_score_normalise))]
     liste_proximite = [population_avec_score_normalise[i][2]
@@ -135,12 +138,20 @@ def plot_pareto(population):
     liste_production = [population_avec_score_normalise[i][3]
                         for i in range(len(population_avec_score_normalise))]
 
+    pareto_compacite = [pareto_frontier[i][1]
+                        for i in range(len(pareto_frontier))]
+    pareto_proximite = [pareto_frontier[i][2]
+                        for i in range(len(pareto_frontier))]
+    pareto_production = [pareto_frontier[i][3]
+                         for i in range(len(pareto_frontier))]
+
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
-    fig.canvas.manager.set_window_title("pareto graph")
+    fig.canvas.manager.set_window_title("Pareto Graph")
 
-    ax.scatter([0], [0], [0], c='r')
+    ax.scatter([0], [0], [0], c='g')
     ax.scatter(liste_compacite, liste_proximite, liste_production, c='b')
+    ax.scatter(pareto_compacite, pareto_proximite, pareto_production, c='r')
     ax.legend()
     ax.set_xlabel("Compacité")
     ax.set_xlim(0, 1)
@@ -149,6 +160,23 @@ def plot_pareto(population):
     ax.set_zlabel("Production")
     ax.set_zlim(0, 1)
     plt.show()
+
+    create_2D_projection_image([liste_compacite, liste_proximite, liste_production], [
+                               pareto_compacite, pareto_proximite, pareto_production])
+
+
+def create_2D_projection_image(scores, pareto_scores):
+    names = ["compacity", "proximity", "production"]
+    for i in range(3):
+        for j in range(i+1, 3):
+            fig = plt.figure()
+            ax2d = fig.add_subplot(111)
+            ax2d.scatter(scores[j], scores[i])
+            ax2d.scatter(pareto_scores[j], pareto_scores[i])
+            ax2d.set_xlabel(f'{names[j]}')
+            ax2d.set_ylabel(f'{names[i]}')
+            fig.savefig(f'./img/2Dprojection_{names[j]}_{names[i]}.png')
+            plt.close(fig)
 
 
 def matrice_dist():
@@ -274,9 +302,9 @@ def mutation_population(population):
     return population
 
 
-
 def mutation_population2(population):
     pass
+
 
 def selection(population, population_size):
     """ Selects the first half of the most optimal solutions in the current population
@@ -303,16 +331,18 @@ def algorithme_genetic(initial_population_size, iteration):
     initial_population = population_generator(initial_population_size)
     nouvelle_population = initial_population
     for i in tqdm(range(iteration)):
-        #nouvelle_population = reproduction_population(nouvelle_population)
+        # nouvelle_population = reproduction_population(nouvelle_population)
         nouvelle_population = mutation_population(nouvelle_population)
         nouvelle_population = selection(
             nouvelle_population, initial_population_size)
     print(" Solution Cost: € {:,}".format(
         cost_bought_plot(nouvelle_population[0])))
     plot_solution(nouvelle_population[0])
-    print(" Solution Compacity: {:,}".format(compacite(nouvelle_population[0])))
+    print(" Solution Compacity: {:,}".format(
+        compacite(nouvelle_population[0])))
     plot_solution(nouvelle_population[1])
-    print(" Solution Compacity: {:,}".format(compacite(nouvelle_population[1])))
+    print(" Solution Compacity: {:,}".format(
+        compacite(nouvelle_population[1])))
     plot_pareto(nouvelle_population)
     return nouvelle_population
 
@@ -329,7 +359,7 @@ def compacite(solution):
     milieuX = sum(plot[0] for plot in solution) / len(solution)
     milieuY = sum(plot[1] for plot in solution) / len(solution)
     # L'inverse afin d'avoir un critère à minimiser
-    return  sum((plot[0] - milieuX) ** 2 + (plot[1] - milieuY) ** 2 for plot in solution)
+    return sum((plot[0] - milieuX) ** 2 + (plot[1] - milieuY) ** 2 for plot in solution)
 
 
 def proximite(solution):
@@ -409,6 +439,43 @@ def population_with_final_score(population):
             (population_with_score_normalized[i][0], score_global))
     return population_with_final_score
 
+
+""" Pareto Frontier Functions"""
+
+
+def is_dominant(solution, other_solution):
+    """
+    Check if a solution is dominant over another solution based on three criteria.
+
+    Returns:
+    bool: True if solution is dominant over other_solution, False otherwise.
+    """
+    for i in range(1, 4):
+        # Comme chaque critère est a minimiser, il faut que la solution ait le score le plus petit
+        #! est-ce vrai? Je vois que certains critères tend vers l'infini?
+        if solution[i] <= other_solution[i]:
+            return False
+    return True
+
+
+def get_pareto_frontier(solutions):
+    """ Generates a list containing the pareto optimal solutions from solutions
+    """
+    pareto_frontier = []
+    remaining_solutions = []
+    # Enumerer chaque solution afin de ne pas comparer des solutions identiques
+    for i, solution in enumerate(solutions):
+        is_pareto_optimal = True
+        for j, other_solution in enumerate(solutions):
+            # Si les solutions sont différentes et qu'elle est dominé, alors elle n'est pas optimal
+            if i != j and is_dominant(other_solution, solution):
+                is_pareto_optimal = False
+                remaining_solutions.append(solution)
+                break
+        # Si la solution est optimal, ajouter à la liste
+        if is_pareto_optimal:
+            pareto_frontier.append(solution)
+    return pareto_frontier, remaining_solutions
 
 
 if __name__ == "__main__":
