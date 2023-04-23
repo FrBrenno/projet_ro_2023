@@ -269,7 +269,7 @@ def reproduction_population(population):
         population: set of solutions
     """
     for i in range(0, len(population), 2):
-        # Selection of the parents 
+        # Selection of the parents
         parent1 = population[i]
         parent2 = population[i + 1]
         # Generation of two children
@@ -317,17 +317,17 @@ def selection(population, population_size):
     # tri la population par score
     sorted_population_ac_score = sorted(
         population_ac_score, key=lambda x: x[1], reverse=True)
-    
+
     # Ajouter à la liste le meilleur score afin de plotter par après
     best_scores.append(sorted_population_ac_score[0][1])
-    
+
     # retourne la moitié de la population avec le meilleur score
     sorted_population = [sorted_population_ac_score[i][0]
                          for i in range(len(sorted_population_ac_score))]
     return sorted_population[:population_size]
 
 
-def algorithme_genetic(initial_population_size, iteration):
+def genetic_algorithm(initial_population_size, iteration):
     """ Genetic Algorithm:
     1: Initial population
     2: Evolution loop
@@ -492,7 +492,7 @@ if __name__ == "__main__":
     """2: INITIAL POPULATION """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    population_amelioree = algorithme_genetic(300, 500)
+    population_amelioree = genetic_algorithm(300, 1000)
 
     """4: Pareto Frontier"""
 
