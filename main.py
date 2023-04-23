@@ -124,7 +124,6 @@ def plot_solution(solution):
     fig, axs = plt.subplots(1, 1, figsize=(10, 9))
     fig.canvas.manager.set_window_title("solution Plot")
     plt.imshow(bought_plot, cmap='gray', interpolation='nearest')
-    # plt.show()
 
 
 def plot_pareto(population):
@@ -317,7 +316,7 @@ def selection(population, population_size):
     population_ac_score = population_with_final_score(population)
     # tri la population par score
     sorted_population_ac_score = sorted(
-        population_ac_score, key=lambda x: x[1], reverse=False)
+        population_ac_score, key=lambda x: x[1], reverse=True)
     
     # Ajouter à la liste le meilleur score afin de plotter par après
     best_scores.append(sorted_population_ac_score[0][1])
@@ -347,12 +346,6 @@ def algorithme_genetic(initial_population_size, iteration):
     print(" Solution Cost: € {:,}".format(
         cost_bought_plot(nouvelle_population[0])))
     plot_solution(nouvelle_population[0])
-    
-    """ print(" Solution Compacity: {:,}".format(
-        compacite(nouvelle_population[0]))) """
-    """ plot_solution(nouvelle_population[1])
-    print(" Solution Compacity: {:,}".format(
-        compacite(nouvelle_population[1]))) """
     plot_pareto(nouvelle_population)
     return nouvelle_population
 
@@ -499,17 +492,7 @@ if __name__ == "__main__":
     """2: INITIAL POPULATION """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-
-    # une_population = population_generator(200)
-    # plot_pareto(une_population)
     population_amelioree = algorithme_genetic(300, 500)
-
-    # population_reproduite = algorithme_genetic(200, 200)
-    # plot_pareto(population_amelioree)
-    # population_with_final_score(population_with_normalized_score(ma_population, distance_map, ma_production_map))
-    # population_avec_score_normalise = population_with_final_score(population_with_normalized_score(ma_population))
-    # Plot
-    # plot_pareto(population_avec_score_normalise)
 
     """4: Pareto Frontier"""
 
