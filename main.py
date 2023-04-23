@@ -242,9 +242,16 @@ def reproduction(parent1, parent2):
     all_possible_parcels = parent1 + parent2
     # enlever les doublons
     unique_parcels = list(set(all_possible_parcels))
-    # Diviser les parcelles en deux
-    child1 = unique_parcels[:len(unique_parcels)//2]
-    child2 = unique_parcels[len(unique_parcels)//2:]
+    # Generer des enfants
+    child1, child2 = [], []
+    for i, parcel in enumerate(unique_parcels):
+        if i % 2 + 1 == 0:
+            child1.append(parcel)
+        else:
+            child2.append(parcel)
+    # Si l'enfant est vide, ne pas effectuer la reproduction
+    if not child1 or not child2:
+        return None, None
     return child1, child2
 
 
@@ -255,13 +262,14 @@ def reproduction_population(population):
         population: set of solutions
     """
     for i in range(0, len(population), 2):
-        # Selection of the parents #! Is there any better selection model?
+        # Selection of the parents 
         parent1 = population[i]
         parent2 = population[i + 1]
         # Generation of two children
         child1, child2 = reproduction(parent1, parent2)
-        population.append(child1)
-        population.append(child2)
+        if child1 is not None and child2 is not None:
+            population.append(child1)
+            population.append(child2)
     return population
 
 
@@ -320,7 +328,7 @@ def algorithme_genetic(initial_population_size, iteration):
     initial_population = population_generator(initial_population_size)
     nouvelle_population = initial_population
     for i in tqdm(range(iteration)):
-        #nouvelle_population = reproduction_population(nouvelle_population)
+        nouvelle_population = reproduction_population(nouvelle_population)
         nouvelle_population = mutation_population(nouvelle_population)
         nouvelle_population = selection(
             nouvelle_population, initial_population_size)
