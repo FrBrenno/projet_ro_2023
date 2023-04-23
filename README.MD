@@ -9,6 +9,7 @@ https://universitelibrebruxelles-my.sharepoint.com/:w:/g/personal/alexandre_bien
 - Numpy
 - Matplotlib
 - Scipy
+- tqmd
 
 Pour installer toutes les librairies, il suffit de taper dans le terminal:
 
