@@ -122,15 +122,15 @@ def plot_solution(solution):
     fig, axs = plt.subplots(1, 1, figsize=(10, 9))
     fig.canvas.manager.set_window_title("solution Plot")
     plt.imshow(bought_plot, cmap='gray', interpolation='nearest')
-    plt.show()
+    # plt.show()
 
 
 def plot_pareto(population):
     population_avec_score_normalise = population_with_normalized_score(
         population)
-    pareto_frontier, population_avec_score_normalise = get_pareto_frontier(population_avec_score_normalise)
-    
-    
+    pareto_frontier, population_avec_score_normalise = get_pareto_frontier(
+        population_avec_score_normalise)
+
     liste_compacite = [population_avec_score_normalise[i][1]
                        for i in range(len(population_avec_score_normalise))]
     liste_proximite = [population_avec_score_normalise[i][2]
@@ -149,7 +149,7 @@ def plot_pareto(population):
     ax = fig.add_subplot(111, projection='3d')
     fig.canvas.manager.set_window_title("Pareto Graph")
 
-    ax.scatter([0], [0], [0], c='g')
+    ax.scatter([1], [1], [1], c='g')
     ax.scatter(liste_compacite, liste_proximite, liste_production, c='b')
     ax.scatter(pareto_compacite, pareto_proximite, pareto_production, c='r')
     ax.legend()
@@ -172,7 +172,7 @@ def create_2D_projection_image(scores, pareto_scores):
             fig = plt.figure()
             ax2d = fig.add_subplot(111)
             ax2d.scatter(scores[j], scores[i])
-            ax2d.scatter(pareto_scores[j], pareto_scores[i])
+            ax2d.scatter(pareto_scores[j], pareto_scores[i], c="r")
             ax2d.set_xlabel(f'{names[j]}')
             ax2d.set_ylabel(f'{names[i]}')
             fig.savefig(f'./img/2Dprojection_{names[j]}_{names[i]}.png')
@@ -271,34 +271,23 @@ def mutation_population(population):
     Args:
         population: set of solutions
     """
-    nouvelle_solution_mutee = []
-    for i in range(len(population)):
-        solution_copie = copy.deepcopy(population[i])
-        # Probabilité de 5% de mutation sur une solution
-        variable_aleatoire = random.randint(0, 100)
-        if variable_aleatoire <= 100:
-            # enlève une parcelle aléatoire
-            solution_copie.pop(np.random.randint(0, len(solution_copie)))
-            # ajoute une parcelle aléatoire
-            new_plot_flat_index = np.random.choice(COST_MAP.size)
-            new_plot_index = np.unravel_index(
-                new_plot_flat_index, COST_MAP.shape)
+    for solution in population:
+        # Probabilité de 1% de mutation dans une solution
+        if random.randint(0, 100) < 1 and len(solution) > 0:
+            # Enlever une parcelle aléatoire
+            solution.pop(random.randint(0, len(solution)-1))
+            # Trouver une parcelle aléatoire valide pour l'ajouter à la solution
             i = 0
-            # Vérification de validité de la parcelle choisie au hasard
-            # Zone innocupée, pas déjà présente dans la solution et ne dépasse pas le budget
-            while ((USAGE_MAP[new_plot_index] != 0) or (new_plot_index in solution_copie) or (cost_bought_plot(solution_copie)) > BUDGET) and i < 5:
-                # Tant qu'on trouve pas une parcelle qui correspond aux critères
+            while i < 10:
                 i += 1
                 new_plot_flat_index = np.random.choice(COST_MAP.size)
                 new_plot_index = np.unravel_index(
                     new_plot_flat_index, COST_MAP.shape)
-                solution_copie.append(new_plot_index)
-            # Si le coût dépasse le budget, rejeter la parcelle #! deja testé non?
-            while cost_bought_plot(solution_copie) > BUDGET:
-                solution_copie.pop(np.random.randint(0, len(solution_copie)))
-            nouvelle_solution_mutee.append(solution_copie)
-    # ? Pas compris ce que ceci fait
-    population.extend(nouvelle_solution_mutee)
+                if USAGE_MAP[new_plot_index] == 0 and new_plot_index not in solution and cost_bought_plot(solution + [new_plot_index]) <= BUDGET:
+                    solution.append(new_plot_index)
+                    break
+                if cost_bought_plot(solution) > BUDGET:
+                    solution.pop(random.randint(0, len(solution)-1))
     return population
 
 
@@ -331,18 +320,18 @@ def algorithme_genetic(initial_population_size, iteration):
     initial_population = population_generator(initial_population_size)
     nouvelle_population = initial_population
     for i in tqdm(range(iteration)):
-        # nouvelle_population = reproduction_population(nouvelle_population)
+        #nouvelle_population = reproduction_population(nouvelle_population)
         nouvelle_population = mutation_population(nouvelle_population)
         nouvelle_population = selection(
             nouvelle_population, initial_population_size)
     print(" Solution Cost: € {:,}".format(
         cost_bought_plot(nouvelle_population[0])))
     plot_solution(nouvelle_population[0])
+    """ print(" Solution Compacity: {:,}".format(
+        compacite(nouvelle_population[0]))) """
+    """ plot_solution(nouvelle_population[1])
     print(" Solution Compacity: {:,}".format(
-        compacite(nouvelle_population[0])))
-    plot_solution(nouvelle_population[1])
-    print(" Solution Compacity: {:,}".format(
-        compacite(nouvelle_population[1])))
+        compacite(nouvelle_population[1]))) """
     plot_pareto(nouvelle_population)
     return nouvelle_population
 
@@ -358,29 +347,26 @@ def compacite(solution):
     # Trouver la parcelle du milieu
     milieuX = sum(plot[0] for plot in solution) / len(solution)
     milieuY = sum(plot[1] for plot in solution) / len(solution)
-    # L'inverse afin d'avoir un critère à minimiser
     return sum((plot[0] - milieuX) ** 2 + (plot[1] - milieuY) ** 2 for plot in solution)
 
 
 def proximite(solution):
     """ Computes the mean of the euclidian distance of a bought parcel and inhabited zone
     """
-    # Critère à minimiser
     return sum(DISTANCE_MAP[solution[i]] for i in range(len(solution))) / len(solution)
 
 
 def production(solution):
     """ Computes the inverse of the sum of production for each bought parcel
     """
-    # Critère à minimiser
-    return 1 / sum(PRODUCTION_MAP[solution[i]] for i in range(len(solution)))
+    return sum(PRODUCTION_MAP[solution[i]] for i in range(len(solution)))
 
 
 """ SCORE FUNCTIONS """
 
 
 def score_separe(solution):
-    """ Computes separately each criteria for a given solution
+    """ Computes separately each criteria for a given solution    
     """
     return compacite(solution), proximite(solution), production(solution)
 
@@ -450,10 +436,8 @@ def is_dominant(solution, other_solution):
     Returns:
     bool: True if solution is dominant over other_solution, False otherwise.
     """
-    for i in range(1, 4):
-        # Comme chaque critère est a minimiser, il faut que la solution ait le score le plus petit
-        #! est-ce vrai? Je vois que certains critères tend vers l'infini?
-        if solution[i] <= other_solution[i]:
+    for i in range(3):
+        if solution[i] < other_solution[i]:
             return False
     return True
 
