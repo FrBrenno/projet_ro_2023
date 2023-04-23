@@ -26,6 +26,8 @@ USING_TEST_MAP = False
 USING_DATA_PLOT = False
 USE_EVOLUTION_LOOP = True
 
+best_scores = []
+
 """ HELPER FUNCTIONS """
 
 
@@ -159,6 +161,12 @@ def plot_pareto(population):
     ax.set_ylim(0, 1)
     ax.set_zlabel("Production")
     ax.set_zlim(0, 1)
+    
+    fig, ax = plt.subplots()
+    ax.plot(best_scores)
+    ax.set_xlabel("Iterations")
+    ax.set_ylabel("Best Final Score")
+    
     plt.show()
 
     create_2D_projection_image([liste_compacite, liste_proximite, liste_production], [
@@ -310,6 +318,10 @@ def selection(population, population_size):
     # tri la population par score
     sorted_population_ac_score = sorted(
         population_ac_score, key=lambda x: x[1], reverse=False)
+    
+    # Ajouter à la liste le meilleur score afin de plotter par après
+    best_scores.append(sorted_population_ac_score[0][1])
+    
     # retourne la moitié de la population avec le meilleur score
     sorted_population = [sorted_population_ac_score[i][0]
                          for i in range(len(sorted_population_ac_score))]
@@ -335,6 +347,7 @@ def algorithme_genetic(initial_population_size, iteration):
     print(" Solution Cost: € {:,}".format(
         cost_bought_plot(nouvelle_population[0])))
     plot_solution(nouvelle_population[0])
+    
     """ print(" Solution Compacity: {:,}".format(
         compacite(nouvelle_population[0]))) """
     """ plot_solution(nouvelle_population[1])
