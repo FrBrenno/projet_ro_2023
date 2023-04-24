@@ -23,7 +23,7 @@ TEST_MAP_DIMENSION = (20, 20)
 
 # CONFIGURATION
 USING_TEST_MAP = False
-USING_DATA_PLOT = False
+USING_DATA_PLOT = True
 USE_EVOLUTION_LOOP = True
 
 best_scores = []
@@ -85,7 +85,7 @@ def load_map(file_path):
     return matrix
 
 
-def configure_plot(cost_map, production_map, usage_map, distance_map):
+def configure_data_plot():
     """ Configure a figure where the matrix data is plotted.
     """
     # Create a figure with three subplots
@@ -306,8 +306,27 @@ def mutation_population(population):
     return population
 
 
-def mutation_population2(population):
-    pass
+def mutation_and_reproduciton_population(population):
+
+    nouvelle_solution_mutee = []
+    for solution in population:
+        copie_solution = copy.deepcopy(solution)
+
+        new_plot_flat_index = np.random.choice(COST_MAP.size)
+        new_plot_index = np.unravel_index(new_plot_flat_index, COST_MAP.shape)
+        while USAGE_MAP[new_plot_index] != 0 or new_plot_index in copie_solution:
+            new_plot_flat_index = np.random.choice(COST_MAP.size)
+            new_plot_index = np.unravel_index(new_plot_flat_index, COST_MAP.shape)
+
+        copie_solution.append(new_plot_index)
+        while cost_bought_plot(copie_solution) > BUDGET:
+            copie_solution.pop(random.randint(0, len(copie_solution)-1))
+        nouvelle_solution_mutee.append(copie_solution)
+
+    population.extend(nouvelle_solution_mutee)
+
+    return population
+
 
 
 def selection(population, population_size):
@@ -316,7 +335,7 @@ def selection(population, population_size):
     population_ac_score = population_with_final_score(population)
     # tri la population par score
     sorted_population_ac_score = sorted(
-        population_ac_score, key=lambda x: x[1], reverse=True)
+        population_ac_score, key=lambda x: x[1], reverse=False)
 
     # Ajouter à la liste le meilleur score afin de plotter par après
     best_scores.append(sorted_population_ac_score[0][1])
@@ -339,12 +358,13 @@ def genetic_algorithm(initial_population_size, iteration):
     initial_population = population_generator(initial_population_size)
     nouvelle_population = initial_population
     for i in tqdm(range(iteration)):
-        nouvelle_population = reproduction_population(nouvelle_population)
-        nouvelle_population = mutation_population(nouvelle_population)
+        #nouvelle_population = reproduction_population(nouvelle_population)
+        nouvelle_population = mutation_and_reproduciton_population(nouvelle_population)
         nouvelle_population = selection(
             nouvelle_population, initial_population_size)
     print(" Solution Cost: € {:,}".format(
         cost_bought_plot(nouvelle_population[0])))
+    print(nouvelle_population)
     plot_solution(nouvelle_population[0])
     plot_pareto(nouvelle_population)
     return nouvelle_population
@@ -373,7 +393,7 @@ def proximite(solution):
 def production(solution):
     """ Computes the inverse of the sum of production for each bought parcel
     """
-    return sum(PRODUCTION_MAP[solution[i]] for i in range(len(solution)))
+    return 1/ sum(PRODUCTION_MAP[solution[i]] for i in range(len(solution)))
 
 
 """ SCORE FUNCTIONS """
@@ -492,7 +512,7 @@ if __name__ == "__main__":
     """2: INITIAL POPULATION """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    population_amelioree = genetic_algorithm(300, 1000)
+    population_amelioree = genetic_algorithm(300, 500)
 
     """4: Pareto Frontier"""
 
