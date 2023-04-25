@@ -15,7 +15,7 @@ PRODUCTION_MAP_PATH = "Production_map.txt"
 USAGE_MAP_PATH = "Usage_map.txt"
 MAP_COST_RATIO = 10000
 BUDGET = 500000
-random.seed(1)
+
 
 # TEST MAP PARAMETERS
 TEST_MAP_PATH = "20x20_"
@@ -23,7 +23,7 @@ TEST_MAP_DIMENSION = (20, 20)
 
 # CONFIGURATION
 USING_TEST_MAP = False
-USING_DATA_PLOT = True
+USING_DATA_PLOT = False
 USE_EVOLUTION_LOOP = True
 
 best_scores = []
@@ -150,7 +150,7 @@ def plot_pareto(population):
     ax = fig.add_subplot(111, projection='3d')
     fig.canvas.manager.set_window_title("Pareto Graph")
 
-    ax.scatter([1], [1], [1], c='g')
+    ax.scatter([0], [0], [0], c='g')
     ax.scatter(liste_compacite, liste_proximite, liste_production, c='b')
     ax.scatter(pareto_compacite, pareto_proximite, pareto_production, c='r')
     ax.legend()
@@ -346,6 +346,35 @@ def selection(population, population_size):
     return sorted_population[:population_size]
 
 
+
+def selection2(population, population_size):
+    pop_avec_norm_score = population_with_normalized_score(population)
+    for sol1_ac_score in pop_avec_norm_score:
+        for sol2_ac_score in pop_avec_norm_score:
+            if sol2_ac_score != sol1_ac_score and sol1_ac_score[1] - sol2_ac_score[1] < 0.001 and sol1_ac_score[1] - sol2_ac_score[1] > -0.001:
+                pop_avec_norm_score.remove(sol1_ac_score)
+                break
+
+    filtered_population = [pop_avec_norm_score[i][0] for i in range(len(pop_avec_norm_score)-1)]
+
+    while len(filtered_population) < population_size:
+        filtered_population.append(solution_generator())
+
+    population_avec_score_separe = population_with_normalized_score(filtered_population)
+    population_ac_score_pareto = []
+    for solution1 in population_avec_score_separe:
+        score_pareto = 0
+        for solution2 in population_avec_score_separe:
+            if is_dominant(solution1, solution2):
+                score_pareto += 1
+        population_ac_score_pareto.append((solution1[0], score_pareto))
+    sorted_pareto_liste = sorted(population_ac_score_pareto, key=lambda x: x[1], reverse=True)
+    sorted_liste = []
+    for solution3 in sorted_pareto_liste:
+        sorted_liste.append(solution3[0])
+    return sorted_liste[:population_size]
+
+
 def genetic_algorithm(initial_population_size, iteration):
     """ Genetic Algorithm:
     1: Initial population
@@ -360,7 +389,7 @@ def genetic_algorithm(initial_population_size, iteration):
     for i in tqdm(range(iteration)):
         #nouvelle_population = reproduction_population(nouvelle_population)
         nouvelle_population = mutation_and_reproduciton_population(nouvelle_population)
-        nouvelle_population = selection(
+        nouvelle_population = selection2(
             nouvelle_population, initial_population_size)
     print(" Solution Cost: € {:,}".format(
         cost_bought_plot(nouvelle_population[0])))
@@ -452,9 +481,9 @@ def population_with_final_score(population):
         population)
     population_with_final_score = []
     for i in range(len(population_with_score_normalized)):
-        score_global = population_with_score_normalized[i][1] * 0.34 + \
-            population_with_score_normalized[i][2] * 0.33 + \
-            population_with_score_normalized[i][3] * 0.33
+        score_global = population_with_score_normalized[i][1] * 0.8 + \
+            population_with_score_normalized[i][2] * 0.1 + \
+            population_with_score_normalized[i][3] * 0.1
         population_with_final_score.append(
             (population_with_score_normalized[i][0], score_global))
     return population_with_final_score
@@ -470,10 +499,9 @@ def is_dominant(solution, other_solution):
     Returns:
     bool: True if solution is dominant over other_solution, False otherwise.
     """
-    for i in range(3):
-        if solution[i] < other_solution[i]:
-            return False
-    return True
+    if solution[1] <= other_solution[1] and solution[2] <= other_solution[2] and solution[3] <= other_solution[3]:
+            return True
+    return False
 
 
 def get_pareto_frontier(solutions):
@@ -512,7 +540,7 @@ if __name__ == "__main__":
     """2: INITIAL POPULATION """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    population_amelioree = genetic_algorithm(300, 500)
+    population_amelioree = genetic_algorithm(1000, 100)
 
     """4: Pareto Frontier"""
 
