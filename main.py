@@ -178,7 +178,7 @@ def create_2D_projection_image(scores, pareto_scores):
         for j in range(i+1, 3):
             fig = plt.figure()
             ax2d = fig.add_subplot(111)
-            ax2d.scatter(scores[j], scores[i])
+            #ax2d.scatter(scores[j], scores[i])
             ax2d.scatter(pareto_scores[j], pareto_scores[i], c="r")
             ax2d.set_xlabel(f'{names[j]}')
             ax2d.set_ylabel(f'{names[i]}')
@@ -259,11 +259,13 @@ def reproduction(parent1, parent2):
             child1.append(parcel)
         else:
             child2.append(parcel)
-    
+        
+    # Si les solutions enfants dépasse le budget, il faut rejeter certaines parcelles
     while cost_bought_plot(child1) > BUDGET:
         child1.pop() 
     while cost_bought_plot(child2) > BUDGET:
-        child2.pop() 
+        child2.pop()
+    
     
     # Si l'enfant est vide, ne pas effectuer la reproduction
     if not child1 or not child2:
@@ -276,7 +278,7 @@ def reproduction_population(population):
 
     Args:
         population: set of solutions
-    """
+    """        
     for i in range(0, len(population), 2):
         # Selection of the parents
         parent1 = population[np.random.randint(len(population)-1)]
@@ -287,7 +289,7 @@ def reproduction_population(population):
             population.append(child1)
             population.append(child2)
     return population
-
+            
 
 def mutation_population(population):
     """ Generate a mutation in the population in order to add randomless to the algorithm
@@ -319,9 +321,13 @@ def selection(population, population_size):
     """ Selects the first half of the most optimal solutions in the current population
     """
     population_ac_score = population_with_final_score(population)
+    
     # tri la population par le plus petit score
     sorted_population_ac_score = sorted(
         population_ac_score, key=lambda x: x[1], reverse=False)
+    
+    # Eliminer les doublons
+    eliminate_doubles(sorted_population_ac_score)
 
     # Ajouter à la liste le meilleur score afin de plotter par après
     best_scores.append(sorted_population_ac_score[0][1])
@@ -329,8 +335,59 @@ def selection(population, population_size):
     # retourne la moitié de la population avec le meilleur score
     sorted_population = [sorted_population_ac_score[i][0]
                          for i in range(len(sorted_population_ac_score))]
+       
+    # ajouter des solutions aléatoires pour avoir la bonne taille
+    while len(sorted_population) < population_size:
+        new_solution = solution_generator()
+        sorted_population.append(new_solution)
+    
     return sorted_population[:population_size]
 
+def selection2(population, population_size):
+    pop_avec_norm_score = population_with_normalized_score(population)
+    # Supprimer solutions doublons
+    for sol1_ac_score in pop_avec_norm_score:
+        for sol2_ac_score in pop_avec_norm_score:
+            if sol2_ac_score != sol1_ac_score and sol1_ac_score[1] - sol2_ac_score[1] < 0.001 and sol1_ac_score[1] - sol2_ac_score[1] > -0.001:
+                pop_avec_norm_score.remove(sol1_ac_score)
+                break
+
+    filtered_population = [pop_avec_norm_score[i][0] for i in range(len(pop_avec_norm_score)-1)]
+    # Ajouter des solutions aléatoire pour avoir la bonne taille
+    while len(filtered_population) < population_size:
+        filtered_population.append(solution_generator())
+        
+    # Réévaluer la population actuelle
+    population_avec_score_separe = population_with_normalized_score(filtered_population)
+    # Trouver solutions dominantes par Pareto
+    population_ac_score_pareto = []
+    for solution1 in population_avec_score_separe:
+        score_pareto = 0
+        for solution2 in population_avec_score_separe:
+            if is_dominant(solution1, solution2):
+                score_pareto += 1
+        population_ac_score_pareto.append((solution1[0], score_pareto))
+    sorted_pareto_liste = sorted(population_ac_score_pareto, key=lambda x: x[1], reverse=True)
+    
+    # Ajouter le meilleur score pour plotter
+    best_scores.append(sorted_pareto_liste[0][1])
+    
+    # Selectionner les meilleures solutions par dominance de Pareto
+    sorted_liste = []
+    for solution3 in sorted_pareto_liste:
+        sorted_liste.append(solution3[0])
+    return sorted_liste[:population_size]
+
+def eliminate_doubles(population_avec_final_score_trié):
+    # sort the list based on the float value in each element
+    population_avec_final_score_trié.sort(key=lambda x: x[1])
+    # iterate over the list and delete elements with the same score
+    scores = set()
+    for item in population_avec_final_score_trié:
+        if item[1] in scores:
+            population_avec_final_score_trié.remove(item)
+        else:
+            scores.add(item[1])
 
 def genetic_algorithm(initial_population_size, iteration):
     """ Genetic Algorithm:
@@ -346,13 +403,16 @@ def genetic_algorithm(initial_population_size, iteration):
     for i in tqdm(range(iteration)):
         nouvelle_population = reproduction_population(nouvelle_population)
         nouvelle_population = mutation_population(nouvelle_population)
-        nouvelle_population = selection(
+        nouvelle_population = selection2(
             nouvelle_population, initial_population_size)
     print(" Solution Cost: € {:,}".format(
         cost_bought_plot(nouvelle_population[0])))
     plot_solution(nouvelle_population[0])
     plot_pareto(nouvelle_population)
-    print(nouvelle_population)
+
+    # Tester s'il y a des doublons dans la solution finale
+    find_double_sublists(nouvelle_population)
+    
     return nouvelle_population
 
 
@@ -460,9 +520,9 @@ def is_dominant(solution, other_solution):
     Returns:
     bool: True if solution is dominant over other_solution, False otherwise.
     """
-    if solution[1] > other_solution[1] or solution[2] > other_solution[2] or solution[3] > other_solution[3]:
-        return False
-    return True
+    if solution[1] < other_solution[1] and solution[2] < other_solution[2] and solution[3] < other_solution[3]:
+        return True
+    return False
 
 
 def get_pareto_frontier(solutions):
@@ -484,6 +544,13 @@ def get_pareto_frontier(solutions):
             pareto_frontier.append(solution)
     return pareto_frontier, remaining_solutions
 
+def find_double_sublists(lst):
+    double_sublists = []
+    for i in range(len(lst)):
+        for j in range(i+1, len(lst)):
+            if len(set(lst[i]+lst[j])) == 2:
+                double_sublists.append([lst[i], lst[j]])
+    print(double_sublists)
 
 if __name__ == "__main__":
     """1: Loading the problem's maps"""
@@ -501,7 +568,7 @@ if __name__ == "__main__":
     """2: INITIAL POPULATION """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    population_amelioree = genetic_algorithm(500, 500)
+    population_amelioree = genetic_algorithm(300, 500)
 
     """4: Pareto Frontier"""
 
