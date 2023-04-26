@@ -151,7 +151,7 @@ def plot_pareto(population):
     fig.canvas.manager.set_window_title("Pareto Graph")
 
     ax.scatter([0], [0], [0], c='g')
-    ax.scatter(liste_compacite, liste_proximite, liste_production, c='b')
+    #ax.scatter(liste_compacite, liste_proximite, liste_production, c='b')
     ax.scatter(pareto_compacite, pareto_proximite, pareto_production, c='r')
     ax.legend()
     ax.set_xlabel("Compacité")
@@ -393,7 +393,6 @@ def genetic_algorithm(initial_population_size, iteration):
             nouvelle_population, initial_population_size)
     print(" Solution Cost: € {:,}".format(
         cost_bought_plot(nouvelle_population[0])))
-    print(nouvelle_population)
     plot_solution(nouvelle_population[0])
     plot_pareto(nouvelle_population)
     return nouvelle_population
@@ -499,6 +498,17 @@ def is_dominant(solution, other_solution):
     Returns:
     bool: True if solution is dominant over other_solution, False otherwise.
     """
+    if solution[1] <= other_solution[1] or solution[2] <= other_solution[2] or solution[3] <= other_solution[3]:
+            return True
+    return False
+
+def is_fully_dominant(solution, other_solution):
+    """
+    Check if a solution is dominant over another solution based on three criteria.
+
+    Returns:
+    bool: True if solution is dominant over other_solution, False otherwise.
+    """
     if solution[1] <= other_solution[1] and solution[2] <= other_solution[2] and solution[3] <= other_solution[3]:
             return True
     return False
@@ -514,7 +524,7 @@ def get_pareto_frontier(solutions):
         is_pareto_optimal = True
         for j, other_solution in enumerate(solutions):
             # Si les solutions sont différentes et qu'elle est dominé, alors elle n'est pas optimal
-            if i != j and is_dominant(other_solution, solution):
+            if i != j and is_fully_dominant(other_solution, solution):
                 is_pareto_optimal = False
                 remaining_solutions.append(solution)
                 break
@@ -540,7 +550,7 @@ if __name__ == "__main__":
     """2: INITIAL POPULATION """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    population_amelioree = genetic_algorithm(1000, 100)
+    population_amelioree = genetic_algorithm(500, 1000)
 
     """4: Pareto Frontier"""
 
@@ -552,3 +562,6 @@ if __name__ == "__main__":
     # Rank the solutions from the Pareto Frontier according to ELECTRE/PROMETHEE.
 
     """(?) 6: Variant to the problem (BONUS) (?)"""
+
+
+
