@@ -1,12 +1,22 @@
 import copy
-import random
+import sys
 
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy.spatial.distance import cdist
+import random
 from tqdm import tqdm
 
+
+
+
+
+
+
 """ PARAMETERS  """
+
+
+
 
 # MAP PARAMETERS
 MAP_DIMENSION = (70, 170)
@@ -28,10 +38,17 @@ USE_EVOLUTION_LOOP = True
 
 best_scores = []
 
+
+
+
+
+
 """ HELPER FUNCTIONS """
 
-
 def load_usage_map(file_path):
+
+
+
     """Load the usage map into memory
 
     Args:
@@ -66,6 +83,8 @@ def load_usage_map(file_path):
 
 
 def load_map(file_path):
+
+
     """Load maps into memory
 
     Args:
@@ -86,6 +105,8 @@ def load_map(file_path):
 
 
 def configure_data_plot():
+
+
     """ Configure a figure where the matrix data is plotted.
     """
     # Create a figure with three subplots
@@ -117,6 +138,7 @@ def configure_data_plot():
 
 def plot_solution(solution):
 
+
     bought_plot = copy.deepcopy(USAGE_MAP)
     for i in range(len(solution)):
         bought_plot[solution[i]] = 5
@@ -127,6 +149,9 @@ def plot_solution(solution):
 
 
 def plot_pareto(population):
+
+
+
     population_avec_score_normalise = population_with_normalized_score(
         population)
     pareto_frontier, population_avec_score_normalise = get_pareto_frontier(
@@ -187,6 +212,7 @@ def create_2D_projection_image(scores, pareto_scores):
 
 
 def matrice_dist():
+
     map_dimension = TEST_MAP_DIMENSION if USING_TEST_MAP else MAP_DIMENSION
     # Trouver l'indice de tous les éléments correspondant à des habitations
     idx_habitations = np.argwhere(USAGE_MAP == 2)
@@ -201,13 +227,57 @@ def matrice_dist():
 
 
 def cost_bought_plot(bought_plot):
+
+
+
     return sum(COST_MAP[bought_plot[i]] for i in range(len(bought_plot) - 1)) * 10000
+
+
+
+
+
+""" FITNESS FUNCTIONS """
+
+# Comme tous les critères sont a minimiser, le point idéal est le point (0, 0, 0)
+
+def compacite(solution):
+    """ Computes the inverse of mean of the euclidean distance of a bought parcel and center one.
+    """
+    # Trouver la parcelle du milieu
+    milieuX = sum(plot[0] for plot in solution) / len(solution)
+    milieuY = sum(plot[1] for plot in solution) / len(solution)
+    # Critère à être minimiser
+    return sum((plot[0] - milieuX) ** 2 + (plot[1] - milieuY) ** 2 for plot in solution)
+
+
+def proximite(solution):
+
+
+    """ Computes the mean of the euclidian distance of a bought parcel and inhabited zone
+    """
+    # Critère à être minimiser
+    return sum(DISTANCE_MAP[solution[i]] for i in range(len(solution))) / len(solution)
+
+
+def production(solution):
+
+
+    """ Computes the inverse of the sum of production for each bought parcel
+    """
+    # Critère à être maximiser mais l'inversion fait qu'on devra la minimiser
+    return 1 / sum(PRODUCTION_MAP[solution[i]] for i in range(len(solution)))
+
+
+
+
 
 
 """ GENETIC ALGORITHM FUNCTIONS """
 
 
 def solution_generator():
+
+
     """ Generates a random solution to the problem respecting budget and usage constraint
     """
     bought_plot = []
@@ -240,6 +310,7 @@ def population_generator(population_size):
 
 
 def reproduction(parent1, parent2):
+
     """ Combine two solutions in order to create to other child solutions
 
     Args:
@@ -248,7 +319,9 @@ def reproduction(parent1, parent2):
     """
     # Generer la liste des éléments disponible pour la générer des enfants
     unique_parcel = list(set(parent1 + parent2))
+
     doublons = list(set([copy.deepcopy(item) for item in parent1 if item in parent2]))
+
 
     # Ajouter les doublons aux deux solutions
     child1 = doublons
@@ -281,8 +354,12 @@ def reproduction_population(population):
     """
     for i in range(0, len(population), 2):
         # Selection of the parents
-        parent1 = population[np.random.randint(len(population)-1)]
-        parent2 = population[np.random.randint(len(population)-1) + 1]
+        random1 = random.randint(0, len(population)-1)
+        random2 = random.randint(0, len(population)-1)
+        while random1 == random2:
+            random2 = random.randint(0, len(population)-1)
+        parent1 = population[random1]
+        parent2 = population[random2]
         # Generation of two children
         child1, child2 = reproduction(parent1, parent2)
         if child1 is not None and child2 is not None:
@@ -292,6 +369,7 @@ def reproduction_population(population):
 
 
 def mutation_population(population):
+
     """ Generate a mutation in the population in order to add randomless to the algorithm
 
     Args:
@@ -339,8 +417,9 @@ def mutation_and_reproduciton_population(population):
     return population
 
 
-
 def selection(population, population_size):
+
+
     """ Selects the first half of the most optimal solutions in the current population
     """
     population_ac_score = population_with_final_score(population)
@@ -366,16 +445,25 @@ def selection(population, population_size):
 
     return sorted_population[:population_size]
 
+
 def selection2(population, population_size):
+
+
     pop_avec_norm_score = population_with_normalized_score(population)
+
     # Supprimer solutions doublons
     for sol1_ac_score in pop_avec_norm_score:
         for sol2_ac_score in pop_avec_norm_score:
-            if sol2_ac_score != sol1_ac_score and sol1_ac_score[1] - sol2_ac_score[1] < 0.001 and sol1_ac_score[1] - sol2_ac_score[1] > -0.001:
+            # Check si les deux solutions sont différentes et que les scores sont très proches
+            if sol1_ac_score != sol2_ac_score and sol1_ac_score[1] == sol2_ac_score[1] \
+                                              and sol1_ac_score[2] == sol2_ac_score[2] \
+                                              and sol1_ac_score[3] == sol2_ac_score[3]:
+
                 pop_avec_norm_score.remove(sol1_ac_score)
                 break
 
-    filtered_population = [pop_avec_norm_score[i][0] for i in range(len(pop_avec_norm_score)-1)]
+    filtered_population = [solution[0] for solution in pop_avec_norm_score]
+
     # Ajouter des solutions aléatoire pour avoir la bonne taille
     while len(filtered_population) < population_size:
         filtered_population.append(solution_generator())
@@ -387,8 +475,7 @@ def selection2(population, population_size):
     for solution1 in population_avec_score_separe:
         score_pareto = 0
         for solution2 in population_avec_score_separe:
-            if is_dominant(solution1, solution2):
-                score_pareto += 1
+            score_pareto += dominance(solution1, solution2)
         population_ac_score_pareto.append((solution1[0], score_pareto))
     sorted_pareto_liste = sorted(population_ac_score_pareto, key=lambda x: x[1], reverse=True)
 
@@ -400,6 +487,7 @@ def selection2(population, population_size):
     for solution3 in sorted_pareto_liste:
         sorted_liste.append(solution3[0])
     return sorted_liste[:population_size]
+
 
 def eliminate_doubles(population_avec_final_score_trié):
     # sort the list based on the float value in each element
@@ -413,35 +501,9 @@ def eliminate_doubles(population_avec_final_score_trié):
             scores.add(item[1])
 
 
-def selection3(population, population_size):
-    pop_avec_norm_score = population_with_normalized_score(population)
-    for sol1_ac_score in pop_avec_norm_score:
-        for sol2_ac_score in pop_avec_norm_score:
-            if sol2_ac_score != sol1_ac_score and sol1_ac_score[1] - sol2_ac_score[1] < 0.001 and sol1_ac_score[1] - sol2_ac_score[1] > -0.001:
-                pop_avec_norm_score.remove(sol1_ac_score)
-                break
-
-    filtered_population = [pop_avec_norm_score[i][0] for i in range(len(pop_avec_norm_score)-1)]
-
-    while len(filtered_population) < population_size:
-        filtered_population.append(solution_generator())
-
-    population_avec_score_separe = population_with_normalized_score(filtered_population)
-    population_ac_score_pareto = []
-    for solution1 in population_avec_score_separe:
-        score_pareto = 0
-        for solution2 in population_avec_score_separe:
-            if is_dominant(solution1, solution2):
-                score_pareto += 1
-        population_ac_score_pareto.append((solution1[0], score_pareto))
-    sorted_pareto_liste = sorted(population_ac_score_pareto, key=lambda x: x[1], reverse=True)
-    sorted_liste = []
-    for solution3 in sorted_pareto_liste:
-        sorted_liste.append(solution3[0])
-    return sorted_liste[:population_size]
-
-
 def genetic_algorithm(initial_population_size, iteration):
+
+
     """ Genetic Algorithm:
     1: Initial population
     2: Evolution loop
@@ -451,57 +513,31 @@ def genetic_algorithm(initial_population_size, iteration):
     3: Optimal solution plot
     """
     initial_population = population_generator(initial_population_size)
-    nouvelle_population = initial_population
-    for i in tqdm(range(iteration)):
+    nouvelle_population = initial_population[:]
+    for _ in tqdm(range(iteration)):
         nouvelle_population = reproduction_population(nouvelle_population)
         nouvelle_population = mutation_population(nouvelle_population)
-        nouvelle_population = selection2(
-            nouvelle_population, initial_population_size)
+        nouvelle_population = selection2(nouvelle_population, initial_population_size)
     print(" Solution Cost: € {:,}".format(
         cost_bought_plot(nouvelle_population[0])))
     plot_solution(nouvelle_population[0])
     plot_pareto(nouvelle_population)
 
     # Tester s'il y a des doublons dans la solution finale
-    find_double_sublists(nouvelle_population)
+    #find_double_sublists(nouvelle_population)
 
     return nouvelle_population
 
 
-""" FITNESS FUNCTIONS """
-
-# Comme tous les critères sont a minimiser, le point idéal est le point (0, 0, 0)
-
-
-def compacite(solution):
-    """ Computes the inverse of mean of the euclidean distance of a bought parcel and center one.
-    """
-    # Trouver la parcelle du milieu
-    milieuX = sum(plot[0] for plot in solution) / len(solution)
-    milieuY = sum(plot[1] for plot in solution) / len(solution)
-    # Critère à être minimiser
-    return sum((plot[0] - milieuX) ** 2 + (plot[1] - milieuY) ** 2 for plot in solution)
-
-
-def proximite(solution):
-    """ Computes the mean of the euclidian distance of a bought parcel and inhabited zone
-    """
-    # Critère à être minimiser
-    return sum(DISTANCE_MAP[solution[i]] for i in range(len(solution))) / len(solution)
-
-
-def production(solution):
-    """ Computes the inverse of the sum of production for each bought parcel
-    """
-    # Critère à être maximiser mais l'inversion fait qu'on devra la minimiser
-    return 1 / sum(PRODUCTION_MAP[solution[i]] for i in range(len(solution)))
 
 
 """ SCORE FUNCTIONS """
 
 
 def score_separe(solution):
-    """ Computes separately each criteria for a given solution    
+
+
+    """ Computes separately each criteria for a given solution
     """
     return compacite(solution), proximite(solution), production(solution)
 
@@ -562,9 +598,22 @@ def population_with_final_score(population):
     return population_with_final_score
 
 
+
+
+
+
+
 """ Pareto Frontier Functions"""
 
-
+def dominance(solution1, solution2):
+    score_pareto = 0
+    if solution1[1] <= solution2[1]:
+        score_pareto += 1
+    if solution1[2] <= solution2[2]:
+        score_pareto += 1
+    if solution1[3] <= solution2[3]:
+        score_pareto += 1
+    return score_pareto
 def is_dominant(solution, other_solution):
     """
     Check if a solution is dominant over another solution based on three criteria.
@@ -615,6 +664,8 @@ def find_double_sublists(lst):
                 double_sublists.append([lst[i], lst[j]])
     print(double_sublists)
 
+
+
 if __name__ == "__main__":
     """1: Loading the problem's maps"""
     COST_MAP = load_map(COST_MAP_PATH)
@@ -631,15 +682,15 @@ if __name__ == "__main__":
     """2: INITIAL POPULATION """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    population_amelioree = genetic_algorithm(300, 500)
+    population_amelioree = genetic_algorithm(100, 300)
 
-    """4: Pareto Frontier"""
+
 
     # Determine the dominant solutions
     # Plot the frontier and generate csv files
 
-    """5: MCDA: ELECTRE or PROMETHEE"""
+    """3: MCDA: ELECTRE or PROMETHEE"""
 
     # Rank the solutions from the Pareto Frontier according to ELECTRE/PROMETHEE.
 
-    """(?) 6: Variant to the problem (BONUS) (?)"""
+
