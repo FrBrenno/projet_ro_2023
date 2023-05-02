@@ -151,8 +151,8 @@ def plot_pareto(population, populatio=None):
 
     ax.scatter([0], [0], [0], c='g', picker=True, pickradius=5)
     ax.scatter([s[1] for s in population_avec_score_normalise], [s[2] for s in population_avec_score_normalise],
-               [s[3] for s in population_avec_score_normalise], c='b', picker=True, pickradius=5)
-    ax.scatter(pareto_compacite, pareto_proximite, pareto_production, c='r', picker=True, pickradius=5)
+               [s[3] for s in population_avec_score_normalise], c='b', picker=True, pickradius=0.1)
+    ax.scatter(pareto_compacite, pareto_proximite, pareto_production, c='r', picker=True, pickradius=0.1)
     ax.legend()
     ax.set_xlabel("Compacité")
     ax.set_xlim(0, 1)
