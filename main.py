@@ -318,7 +318,7 @@ def reproduction2(parent1, parent2):
         parent2: Second solution
     """
     # séparer les doublons
-    double_solutions = set(parent1).intersection(parent2)
+    double_solutions = list(set(parent1).intersection(parent2))
     # combiner les parents
     all_possible_parcels = parent1 + parent2
     # enlever les doublons
@@ -331,10 +331,10 @@ def reproduction2(parent1, parent2):
         else:
             child2.append(parcel)
     # Si l'enfant est vide, ne pas effectuer la reproduction
-    child1, child2 = child1.extend(double_solutions), child2.extend(double_solutions)
+    child1.extend(double_solutions), child2.extend(double_solutions)
     if not child1 or not child2:
+        print('probleme reprodcution 2')
         return None, None
-    print(child1, child2)
     return list(set(child1)), list(set(child2))
 
 
@@ -385,8 +385,6 @@ def mutation_population(population):
                 if cost_bought_plot(solution) > BUDGET:
                     solution.pop(random.randint(0, len(solution) - 1))
     return population
-
-
 def mutation_and_reproduciton_population(population):
     nouvelle_solution_mutee = []
     for solution in population:
@@ -503,9 +501,10 @@ def genetic_algorithm(initial_population_size, iteration):
     initial_population = population_generator(initial_population_size)
     nouvelle_population = initial_population[:]
     for _ in tqdm(range(iteration)):
-        # nouvelle_population = reproduction_population(nouvelle_population)
+        nouvelle_population = reproduction_population(nouvelle_population)
         nouvelle_population = mutation_and_reproduciton_population(nouvelle_population)
         nouvelle_population = selection2(nouvelle_population, initial_population_size)
+    print(nouvelle_population)
     print(" Solution Cost: € {:,}".format(
         cost_bought_plot(nouvelle_population[0])))
     plot_solution(nouvelle_population[0])
