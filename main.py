@@ -125,8 +125,8 @@ def plot_solution(solution):
     plt.imshow(bought_plot, cmap='gray', interpolation='nearest')
 
 
-def plot_pareto(population, populatio=None):
-    population_avec_score_normalise = population_with_normalized_score(
+def plot_pareto(population):
+    population_avec_score_normalise = population_with_separate_score(
         population)
     pareto_frontier, population_avec_score_normalise = get_pareto_frontier(
         population_avec_score_normalise)
@@ -150,18 +150,19 @@ def plot_pareto(population, populatio=None):
     fig.canvas.manager.set_window_title("Pareto Graph")
 
     # ax.scatter([0], [0], [0], c='g', picker=True, pickradius=5)
-    ax.scatter([s[1] for s in population_avec_score_normalise], [s[2] for s in population_avec_score_normalise],
-               [s[3] for s in population_avec_score_normalise], c='b', picker=True, pickradius=0.1)
+
+   #ax.scatter([s[1] for s in population_avec_score_normalise], [s[2] for s in population_avec_score_normalise],
+               #[s[3] for s in population_avec_score_normalise], c='b', picker=True, pickradius=0.1)
     ax.scatter([s[1] for s in pareto_frontier], [s[2] for s in pareto_frontier], [s[3] for s in pareto_frontier], c='r',
                picker=True, pickradius=0.1)
     # ax.legend()
     ax.set_xlabel("Compacité")
-    ax.set_xlim(0, 1)
+    ax.set_xlim(min(liste_compacite), max(liste_compacite))
     ax.set_ylabel("Proximité")
-    ax.set_ylim(0, 1)
+    ax.set_ylim(min(liste_proximite), max(liste_proximite))
     ax.set_zlabel("Production")
-    ax.set_zlim(0, 1)
-    fig.canvas.mpl_connect('pick_event', lambda event: onpick(event, population_avec_score_normalise))
+    ax.set_zlim(min(liste_production), max(liste_production))
+    fig.canvas.mpl_connect('pick_event', lambda event: onpick(event, pareto_frontier))
 
     fig, ax = plt.subplots()
     ax.plot(best_scores)
@@ -469,7 +470,7 @@ def population_with_separate_score(population):
     generation_avec_score = []
     for i in range(len(population)):
         generation_avec_score.append(
-            (population[i], score_separe(population[i])))
+            (population[i], score_separe(population[i])[0], score_separe(population[i])[1], score_separe(population[i])[2]))
     return generation_avec_score
 
 
@@ -478,23 +479,37 @@ def population_with_normalized_score(population):
     """
     generation_avec_score = population_with_separate_score(population)
 
-    # Trouver l'amplitude maximale pour chaque critère
-    max_compacite = max(generation_avec_score, key=lambda x: x[1][0])[1][0]
-    min_compacite = min(generation_avec_score, key=lambda x: x[1][0])[1][0]
-    max_proximite = max(generation_avec_score, key=lambda x: x[1][1])[1][1]
-    min_proximite = min(generation_avec_score, key=lambda x: x[1][1])[1][1]
-    max_production = max(generation_avec_score, key=lambda x: x[1][2])[1][2]
-    min_production = min(generation_avec_score, key=lambda x: x[1][2])[1][2]
+    max_compacite = max(generation_avec_score, key=lambda x: x[1])[1]
+    min_compacite = min(generation_avec_score, key=lambda x: x[1])[1]
+    max_proximite = max(generation_avec_score, key=lambda x: x[2])[2]
+    min_proximite = min(generation_avec_score, key=lambda x: x[2])[2]
+    max_production = max(generation_avec_score, key=lambda x: x[3])[3]
+    min_production = min(generation_avec_score, key=lambda x: x[3])[3]
+
+
+
+
+
+
+
+    """
+        # Trouver l'amplitude maximale pour chaque critère
+        max_compacite = max(generation_avec_score, key=lambda x: x[1][0])[1][0]
+        min_compacite = min(generation_avec_score, key=lambda x: x[1][0])[1][0]
+        max_proximite = max(generation_avec_score, key=lambda x: x[1][1])[1][1]
+        min_proximite = min(generation_avec_score, key=lambda x: x[1][1])[1][1]
+        max_production = max(generation_avec_score, key=lambda x: x[1][2])[1][2]
+        min_production = min(generation_avec_score, key=lambda x: x[1][2])[1][2]"""
 
     # Normaliser les scores pour chaque critère
     population_with_normalized_score = []
     for i in range(len(generation_avec_score)):
         population_with_normalized_score.append((generation_avec_score[i][0],
-                                                 (generation_avec_score[i][1][0] - min_compacite) / (
+                                                 (generation_avec_score[i][1] - min_compacite) / (
                                                          max_compacite - min_compacite),
-                                                 (generation_avec_score[i][1][1] - min_proximite) / (
+                                                 (generation_avec_score[i][2] - min_proximite) / (
                                                          max_proximite - min_proximite),
-                                                 (generation_avec_score[i][1][2] - min_production) / (
+                                                 (generation_avec_score[i][3] - min_production) / (
                                                          max_production - min_production)))
 
     return population_with_normalized_score
@@ -601,7 +616,7 @@ if __name__ == "__main__":
     """2: INITIAL POPULATION """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    population_amelioree = genetic_algorithm(500, 300)
+    population_amelioree = genetic_algorithm(500, 500)
 
     # Determine the dominant solutions
     # Plot the frontier and generate csv files
