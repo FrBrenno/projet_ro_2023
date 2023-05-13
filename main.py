@@ -10,12 +10,14 @@ from tqdm import tqdm
 """ PARAMETERS  """
 
 # MAP PARAMETERS
-MAP_DIMENSION = (70, 170)
+#MAP_DIMENSION = (70, 170)
 COST_MAP_PATH = "Cost_map.txt"
 PRODUCTION_MAP_PATH = "Production_map.txt"
 USAGE_MAP_PATH = "Usage_map.txt"
 MAP_COST_RATIO = 10000
 BUDGET = 500000
+
+
 
 # TEST MAP PARAMETERS
 TEST_MAP_PATH = "20x20_"
@@ -29,6 +31,21 @@ USE_EVOLUTION_LOOP = True
 best_scores = []
 
 """ HELPER FUNCTIONS """
+
+
+def get_map_dimension(file_path):
+    path = "./data/" + TEST_MAP_PATH + \
+           file_path if USING_TEST_MAP else "./data/" + file_path
+    with open(path) as file:
+        line_nb = 0
+        collumn_nb = 0
+        for line in file.readlines():
+            line_nb += 1
+            if line_nb == 1:
+                for element_nb in range(len(line) - 1):
+                    collumn_nb += 1
+    return (line_nb, collumn_nb)
+
 
 
 def load_usage_map(file_path):
@@ -121,8 +138,9 @@ def plot_solution(solution):
         bought_plot[solution[i]] = 5
 
     fig, axs = plt.subplots(1, 1, figsize=(10, 9))
-    fig.canvas.manager.set_window_title("solution Plot")
+    fig.canvas.manager.set_window_title("solution Plot:  " + "compacity: " + str(compacite(solution)) + " proximite: " + str(proximite(solution)) + " production: " + str(production(solution)))
     plt.imshow(bought_plot, cmap='gray', interpolation='nearest')
+    plt.show()
 
 
 def plot_pareto(population):
@@ -157,17 +175,17 @@ def plot_pareto(population):
                picker=True, pickradius=0.1)
     # ax.legend()
     ax.set_xlabel("Compacité")
-    ax.set_xlim(min(liste_compacite), max(liste_compacite))
+    ax.set_xlim(min(liste_compacite), 1000)
     ax.set_ylabel("Proximité")
     ax.set_ylim(min(liste_proximite), max(liste_proximite))
     ax.set_zlabel("Production")
     ax.set_zlim(min(liste_production), max(liste_production))
     fig.canvas.mpl_connect('pick_event', lambda event: onpick(event, pareto_frontier))
 
-    fig, ax = plt.subplots()
-    ax.plot(best_scores)
-    ax.set_xlabel("Iterations")
-    ax.set_ylabel("Best Final Score")
+    #fig, ax = plt.subplots()
+    #ax.plot(best_scores)
+    #ax.set_xlabel("Iterations")
+    #ax.set_ylabel("Best Final Score")
 
     plt.show()
 
@@ -447,7 +465,7 @@ def genetic_algorithm(initial_population_size, iteration):
     print(" Solution Cost: € {:,}".format(
         cost_bought_plot(nouvelle_population[0])))
     #plot_solution(nouvelle_population[0])
-    #plot_pareto(nouvelle_population)
+    plot_pareto(nouvelle_population)
 
     # Tester s'il y a des doublons dans la solution finale
     # find_double_sublists(nouvelle_population)
@@ -615,10 +633,12 @@ def electre(population_finale, poids_compacite = 0.33, poids_proximite = 0.33, p
 
 if __name__ == "__main__":
     """1: Loading the problem's maps"""
+    MAP_DIMENSION = get_map_dimension(COST_MAP_PATH)
     COST_MAP = load_map(COST_MAP_PATH)
     PRODUCTION_MAP = load_map(PRODUCTION_MAP_PATH)
     USAGE_MAP = load_usage_map(USAGE_MAP_PATH)
     DISTANCE_MAP = matrice_dist()
+
 
     # plot_solution(solution_generator(cost_map, usage_map))
     # Plot the matrix data
@@ -629,7 +649,7 @@ if __name__ == "__main__":
     """2: INITIAL POPULATION """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    population_amelioree = genetic_algorithm(500, 10)
+    population_amelioree = genetic_algorithm(500, 300)
     print(population_amelioree[0])
     # Determine the dominant solutions
     # Plot the frontier and generate csv files
