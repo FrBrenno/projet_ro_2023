@@ -17,7 +17,7 @@ USAGE_MAP_PATH = "Usage_map.txt"
 MAP_COST_RATIO = 10000
 BUDGET = 500000
 
-
+random.seed(42)
 
 # TEST MAP PARAMETERS
 TEST_MAP_PATH = "20x20_"
@@ -175,7 +175,7 @@ def plot_pareto(population):
                picker=True, pickradius=0.1)
     # ax.legend()
     ax.set_xlabel("Compacité")
-    ax.set_xlim(min(liste_compacite), 1000)
+    ax.set_xlim(min(liste_compacite), max(liste_compacite))
     ax.set_ylabel("Proximité")
     ax.set_ylim(min(liste_proximite), max(liste_proximite))
     ax.set_zlabel("Production")
@@ -246,7 +246,7 @@ def compacite(solution):
     milieuX = sum(plot[0] for plot in solution) / len(solution)
     milieuY = sum(plot[1] for plot in solution) / len(solution)
     # Critère à être minimiser
-    return sum((plot[0] - milieuX) ** 2 + (plot[1] - milieuY) ** 2 for plot in solution)
+    return sum(((plot[0] - milieuX) ** 2 + (plot[1] - milieuY) ** 2)**(1/2) for plot in solution)
 
 
 def proximite(solution):
@@ -649,7 +649,7 @@ if __name__ == "__main__":
     """2: INITIAL POPULATION """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    population_amelioree = genetic_algorithm(500, 300)
+    population_amelioree = genetic_algorithm(500, 400)
     print(population_amelioree[0])
     # Determine the dominant solutions
     # Plot the frontier and generate csv files
