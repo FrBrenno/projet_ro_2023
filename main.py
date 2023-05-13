@@ -148,7 +148,7 @@ def plot_pareto(population, populatio=None):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     fig.canvas.manager.set_window_title("Pareto Graph")
-
+    """sale fils de pute"""
     # ax.scatter([0], [0], [0], c='g', picker=True, pickradius=5)
     ax.scatter([s[1] for s in population_avec_score_normalise], [s[2] for s in population_avec_score_normalise],
                [s[3] for s in population_avec_score_normalise], c='b', picker=True, pickradius=0.1)
@@ -601,7 +601,7 @@ if __name__ == "__main__":
     """2: INITIAL POPULATION """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    population_amelioree = genetic_algorithm(500, 300)
+    population_amelioree = genetic_algorithm(500, 100)
 
     # Determine the dominant solutions
     # Plot the frontier and generate csv files
