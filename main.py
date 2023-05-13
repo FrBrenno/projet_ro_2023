@@ -279,41 +279,8 @@ def population_generator(population_size):
     return generation
 
 
+
 def reproduction(parent1, parent2):
-    """ Combine two solutions in order to create to other child solutions
-
-    Args:
-        parent1: First solution
-        parent2: Second solution
-    """
-    # Generer la liste des éléments disponible pour la générer des enfants
-    unique_parcel = list(set(parent1 + parent2))
-
-    doublons = set(parent1).intersection(parent2)
-
-    # Ajouter les doublons aux deux solutions
-    child1 = doublons
-    child2 = doublons
-    # Ajouter les parcelles unique en alternant
-    for i, parcel in enumerate(unique_parcel):
-        if (i % 2) == 0:
-            child1.append(parcel)
-        else:
-            child2.append(parcel)
-
-    # Si les solutions enfants dépasse le budget, il faut rejeter certaines parcelles
-    while cost_bought_plot(child1) > BUDGET:
-        child1.pop()
-    while cost_bought_plot(child2) > BUDGET:
-        child2.pop()
-
-    # Si l'enfant est vide, ne pas effectuer la reproduction
-    if not child1 or not child2:
-        return None, None
-    return list(set(child1)), list(set(child2))
-
-
-def reproduction2(parent1, parent2):
     """ Combine two solutions in order to create to other child solutions
     Args:
         parent1: First solution
@@ -364,7 +331,7 @@ def reproduction_population(population):
         parent1 = population[random1]
         parent2 = population[random2]
         # Generation of two children
-        child1, child2 = reproduction2(parent1, parent2)
+        child1, child2 = reproduction(parent1, parent2)
 
 
         if child1 is not None and child2 is not None :
@@ -375,33 +342,6 @@ def reproduction_population(population):
 
 
 def mutation_population(population):
-    """ Generate a mutation in the population in order to add randomless to the algorithm
-
-    Args:
-        population: set of solutions
-    """
-    for solution in population:
-        # Probabilité de 1% de mutation dans une solution
-        if random.randint(0, 100) < 1 and len(solution) > 0:
-            # Enlever une parcelle aléatoire
-            solution.pop(random.randint(0, len(solution) - 1))
-            # Trouver une parcelle aléatoire valide pour l'ajouter à la solution
-            i = 0
-            while i < 10:
-                i += 1
-                new_plot_flat_index = np.random.choice(COST_MAP.size)
-                new_plot_index = np.unravel_index(
-                    new_plot_flat_index, COST_MAP.shape)
-                if USAGE_MAP[new_plot_index] == 0 and new_plot_index not in solution and cost_bought_plot(
-                        solution + [new_plot_index]) <= BUDGET:
-                    solution.append(new_plot_index)
-                    break
-                if cost_bought_plot(solution) > BUDGET:
-                    solution.pop(random.randint(0, len(solution) - 1))
-    return population
-
-
-def mutation_and_reproduciton_population(population):
     nouvelle_solution_mutee = []
     for solution in population:
         copie_solution = copy.deepcopy(solution)
@@ -422,34 +362,8 @@ def mutation_and_reproduciton_population(population):
     return population
 
 
+
 def selection(population, population_size):
-    """ Selects the first half of the most optimal solutions in the current population
-    """
-    population_ac_score = population_with_final_score(population)
-
-    # tri la population par le plus petit score
-    sorted_population_ac_score = sorted(
-        population_ac_score, key=lambda x: x[1], reverse=False)
-
-    # Eliminer les doublons
-    eliminate_doubles(sorted_population_ac_score)
-
-    # Ajouter à la liste le meilleur score afin de plotter par après
-    best_scores.append(sorted_population_ac_score[0][1])
-
-    # retourne la moitié de la population avec le meilleur score
-    sorted_population = [sorted_population_ac_score[i][0]
-                         for i in range(len(sorted_population_ac_score))]
-
-    # ajouter des solutions aléatoires pour avoir la bonne taille
-    while len(sorted_population) < population_size:
-        new_solution = solution_generator()
-        sorted_population.append(new_solution)
-
-    return sorted_population[:population_size]
-
-
-def selection2(population, population_size):
     population_without_doubles = []
     for solution in population:
         if solution not in population_without_doubles:
@@ -527,8 +441,8 @@ def genetic_algorithm(initial_population_size, iteration):
     nouvelle_population = initial_population[:]
     for _ in tqdm(range(iteration)):
         nouvelle_population = reproduction_population(nouvelle_population)
-        nouvelle_population = mutation_and_reproduciton_population(nouvelle_population)
-        nouvelle_population = selection2(nouvelle_population, initial_population_size)
+        nouvelle_population = mutation_population(nouvelle_population)
+        nouvelle_population = selection(nouvelle_population, initial_population_size)
     print(" Solution Cost: € {:,}".format(
         cost_bought_plot(nouvelle_population[0])))
     plot_solution(nouvelle_population[0])
