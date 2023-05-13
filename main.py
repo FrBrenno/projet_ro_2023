@@ -149,11 +149,12 @@ def plot_pareto(population, populatio=None):
     ax = fig.add_subplot(111, projection='3d')
     fig.canvas.manager.set_window_title("Pareto Graph")
 
-    ax.scatter([0], [0], [0], c='g', picker=True, pickradius=5)
+    # ax.scatter([0], [0], [0], c='g', picker=True, pickradius=5)
     ax.scatter([s[1] for s in population_avec_score_normalise], [s[2] for s in population_avec_score_normalise],
                [s[3] for s in population_avec_score_normalise], c='b', picker=True, pickradius=0.1)
-    ax.scatter(pareto_compacite, pareto_proximite, pareto_production, c='r', picker=True, pickradius=0.1)
-    ax.legend()
+    ax.scatter([s[1] for s in pareto_frontier], [s[2] for s in pareto_frontier], [s[3] for s in pareto_frontier], c='r',
+               picker=True, pickradius=0.1)
+    # ax.legend()
     ax.set_xlabel("Compacité")
     ax.set_xlim(0, 1)
     ax.set_ylabel("Proximité")
@@ -180,6 +181,7 @@ def onpick(event, normalise):
     solution = normalise[ind[0]][0]
     print(solution)
     plot_solution(solution)
+
 
 def create_2D_projection_image(scores, pareto_scores):
     names = ["compacity", "proximity", "production"]
@@ -335,6 +337,14 @@ def reproduction2(parent1, parent2):
     if not child1 or not child2:
         print('probleme reprodcution 2')
         return None, None
+    while cost_bought_plot(child1) > BUDGET:
+        child1.pop()
+    while cost_bought_plot(child2) > BUDGET:
+        child2.pop()
+    while cost_bought_plot(child1) < BUDGET - 80000:
+        child1.append((random.randint(0, 69), random.randint(0, 169)))
+    while cost_bought_plot(child2) < BUDGET - 80000:
+        child2.append((random.randint(0, 69), random.randint(0, 169)))
     return list(set(child1)), list(set(child2))
 
 
@@ -344,20 +354,24 @@ def reproduction_population(population):
     Args:
         population: set of solutions
     """
-    for i in range(0, len(population), 2):
+    for i in range(0, len(population) - 10, 2):
         # Selection of the parents
         random1 = random.randint(0, len(population) - 1)
         random2 = random.randint(0, len(population) - 1)
         while random1 == random2:
             random2 = random.randint(0, len(population) - 1)
+
         parent1 = population[random1]
         parent2 = population[random2]
         # Generation of two children
         child1, child2 = reproduction2(parent1, parent2)
-        if child1 is not None and child2 is not None:
+
+
+        if child1 is not None and child2 is not None :
             population.append(child1)
             population.append(child2)
-    return population
+        return population
+
 
 
 def mutation_population(population):
@@ -385,6 +399,8 @@ def mutation_population(population):
                 if cost_bought_plot(solution) > BUDGET:
                     solution.pop(random.randint(0, len(solution) - 1))
     return population
+
+
 def mutation_and_reproduciton_population(population):
     nouvelle_solution_mutee = []
     for solution in population:
@@ -434,23 +450,32 @@ def selection(population, population_size):
 
 
 def selection2(population, population_size):
+    population_without_doubles = []
+    for solution in population:
+        if solution not in population_without_doubles:
+            population_without_doubles.append(solution)
+    population = population_without_doubles
+
     pop_avec_norm_score = population_with_normalized_score(population)
 
+
+
+
     # Supprimer solutions doublons
-    for sol1_ac_score in pop_avec_norm_score:
-        for sol2_ac_score in pop_avec_norm_score:
-            # Check si les deux solutions sont différentes et que les scores sont très proches
-            difference_compacite = abs(sol1_ac_score[1] - sol2_ac_score[1])
-            difference_proximite = abs(sol1_ac_score[2] - sol2_ac_score[2])
-            difference_production = abs(sol1_ac_score[3] - sol2_ac_score[3])
+    #for sol1_ac_score in pop_avec_norm_score:
+    #for sol2_ac_score in pop_avec_norm_score:
 
-            if sol1_ac_score != sol2_ac_score and difference_compacite < 0.05 \
-                    and difference_proximite < 0.05 \
-                    and difference_production < 0.05:
-                pop_avec_norm_score.remove(sol1_ac_score)
-                break
-
+    """# Check si les deux solutions sont différentes et que les scores sont très proches
+    difference_compacite = abs(sol1_ac_score[1] - sol2_ac_score[1])
+    difference_proximite = abs(sol1_ac_score[2] - sol2_ac_score[2])
+    difference_production = abs(sol1_ac_score[3] - sol2_ac_score[3])
+    if sol1_ac_score != sol2_ac_score and difference_compacite < 0.05 \
+            and difference_proximite < 0.05 \
+            and difference_production < 0.05:
+        pop_avec_norm_score.remove(sol1_ac_score)
+        break"""
     filtered_population = [solution[0] for solution in pop_avec_norm_score]
+
 
     # Ajouter des solutions aléatoire pour avoir la bonne taille
     while len(filtered_population) < population_size:
@@ -504,7 +529,6 @@ def genetic_algorithm(initial_population_size, iteration):
         nouvelle_population = reproduction_population(nouvelle_population)
         nouvelle_population = mutation_and_reproduciton_population(nouvelle_population)
         nouvelle_population = selection2(nouvelle_population, initial_population_size)
-    print(nouvelle_population)
     print(" Solution Cost: € {:,}".format(
         cost_bought_plot(nouvelle_population[0])))
     plot_solution(nouvelle_population[0])
@@ -663,7 +687,7 @@ if __name__ == "__main__":
     """2: INITIAL POPULATION """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    population_amelioree = genetic_algorithm(100, 100)
+    population_amelioree = genetic_algorithm(500, 300)
 
     # Determine the dominant solutions
     # Plot the frontier and generate csv files
