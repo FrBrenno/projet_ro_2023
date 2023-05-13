@@ -446,8 +446,8 @@ def genetic_algorithm(initial_population_size, iteration):
         nouvelle_population = selection(nouvelle_population, initial_population_size)
     print(" Solution Cost: € {:,}".format(
         cost_bought_plot(nouvelle_population[0])))
-    plot_solution(nouvelle_population[0])
-    plot_pareto(nouvelle_population)
+    #plot_solution(nouvelle_population[0])
+    #plot_pareto(nouvelle_population)
 
     # Tester s'il y a des doublons dans la solution finale
     # find_double_sublists(nouvelle_population)
@@ -600,6 +600,19 @@ def find_double_sublists(lst):
     print(double_sublists)
 
 
+
+def electre(population_finale, poids_compacite = 0.33, poids_proximite = 0.33, poids_production = 0.33):
+    population_avec_score_normalise = population_with_normalized_score(population_finale)
+    pareto_frontier, population_avec_score_normalise = get_pareto_frontier(
+        population_avec_score_normalise)
+    liste_de_scores_finaux = []
+    for solution in pareto_frontier:
+        solution_avec_score_finale = (solution[0], solution[1]*poids_compacite + solution[2]*poids_proximite + solution[3]*poids_production)
+        liste_de_scores_finaux.append(solution_avec_score_finale)
+    liste_de_scores_finaux_triee = sorted(liste_de_scores_finaux, key=lambda x: x[1], reverse=False)
+    return liste_de_scores_finaux_triee[0][0]
+
+
 if __name__ == "__main__":
     """1: Loading the problem's maps"""
     COST_MAP = load_map(COST_MAP_PATH)
@@ -616,11 +629,19 @@ if __name__ == "__main__":
     """2: INITIAL POPULATION """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    population_amelioree = genetic_algorithm(500, 500)
-
+    population_amelioree = genetic_algorithm(500, 10)
+    print(population_amelioree[0])
     # Determine the dominant solutions
     # Plot the frontier and generate csv files
 
     """3: MCDA: ELECTRE or PROMETHEE"""
+
+    #poids_proximite = int(input("poids proximité (33% si rien):"))
+    #poids_compacite = int(input("poids compacité (33% si rien):"))
+    #poids_production = 1 - poids_compacite - poids_proximite
+    solution_finale = electre(population_amelioree)
+    print(solution_finale)
+    plot_solution(solution_finale)
+
 
     # Rank the solutions from the Pareto Frontier according to ELECTRE/PROMETHEE.
