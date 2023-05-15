@@ -740,7 +740,7 @@ if __name__ == "__main__":
     """2: GENETIC ALGORITHM """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    population_amelioree = genetic_algorithm(400, 1000)
+    population_amelioree = genetic_algorithm(400, 500)
     # Generate csv files for pareto-optimal solutions
     generate_csv_pareto_solutions()
 
@@ -748,3 +748,5 @@ if __name__ == "__main__":
 
     ranked_solutions = promethee(population_amelioree)
     plot_solution(ranked_solutions[0][0])
+
+    generate_csv("best_solution_promethee", ranked_solutions[0][0], ["x", "y"])
