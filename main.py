@@ -28,8 +28,8 @@ USE_EVOLUTION_LOOP = True
 
 best_scores = []
 
-random.seed(1)
-np.random.seed(1)
+#random.seed(2)
+#np.random.seed(3)
 
 """ HELPER FUNCTIONS """
 
@@ -139,7 +139,7 @@ def plot_solution(solution):
         bought_plot[solution[i]] = 5
 
     fig, axs = plt.subplots(1, 1, figsize=(10, 9))
-    fig.canvas.manager.set_window_title("solution Plot:  " + "compacity: " + str(compacite(solution)) + " proximite: " + str(proximite(solution)) + " production: " + str(1/production(solution)))
+    fig.canvas.manager.set_window_title("solution Plot: " + "coût: " + str(cost_bought_plot(solution)) + "  compacity: " + str(compacite(solution)) + " proximite: " + str(proximite(solution)) + " production: " + str(1/production(solution)))
     plt.imshow(bought_plot, cmap='gray', interpolation='nearest')
     plt.show()
 
@@ -170,7 +170,7 @@ def plot_pareto(population):
 
     # ax.scatter([0], [0], [0], c='g', picker=True, pickradius=5)
 
-    #ax.scatter([s[1] for s in population_avec_score_normalise], [s[2] for s in population_avec_score_normalise], [s[3] for s in population_avec_score_normalise], c='b', picker=True, pickradius=0.1)
+    ax.scatter([s[1] for s in population_avec_score_normalise], [s[2] for s in population_avec_score_normalise], [s[3] for s in population_avec_score_normalise], c='b', picker=True, pickradius=0.1)
     ax.scatter([s[1] for s in pareto_frontier], [s[2] for s in pareto_frontier], [s[3] for s in pareto_frontier], c='r',
                picker=True, pickradius=0.1)
     # ax.legend()
@@ -246,7 +246,7 @@ def compacite(solution):
     milieuX = sum(plot[0] for plot in solution) / len(solution)
     milieuY = sum(plot[1] for plot in solution) / len(solution)
     # Critère à être minimiser
-    return sum((((plot[0] - milieuX)**2 + (plot[1] - milieuY)**2) / len(solution))**(1/2) for plot in solution)
+    return (sum((((plot[0] - milieuX)**2 + (plot[1] - milieuY)**2) for plot in solution)) / len(solution))**(1/2)
 
 def proximite(solution):
     """ Computes the mean of the euclidian distance of a bought parcel and inhabited zone
@@ -626,7 +626,7 @@ if __name__ == "__main__":
     """2: INITIAL POPULATION """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    population_amelioree = genetic_algorithm(350, 400)
+    population_amelioree = genetic_algorithm(200, 400)
     # Determine the dominant solutions
     # Plot the frontier and generate csv files
 
