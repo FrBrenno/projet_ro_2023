@@ -1,4 +1,5 @@
 import copy
+import csv
 import sys
 
 import numpy as np
@@ -10,7 +11,7 @@ from tqdm import tqdm
 """ PARAMETERS  """
 
 # MAP PARAMETERS
-#MAP_DIMENSION = (70, 170)
+# MAP_DIMENSION = (70, 170)
 COST_MAP_PATH = "Cost_map.txt"
 PRODUCTION_MAP_PATH = "Production_map.txt"
 USAGE_MAP_PATH = "Usage_map.txt"
@@ -28,10 +29,27 @@ USE_EVOLUTION_LOOP = True
 
 best_scores = []
 
-#random.seed(2)
-#np.random.seed(3)
+# random.seed(2)
+# np.random.seed(3)
 
 """ HELPER FUNCTIONS """
+
+
+def generate_csv(filename, data, column_names):
+    with open('./results/' + filename + '.csv', 'w+', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(column_names)
+        for row in data:
+            writer.writerow(row)
+
+
+def generate_csv_pareto_solutions():
+    population_avec_score_normalise = population_with_separate_score(
+        population_amelioree)
+    pareto_frontier_score, population_avec_score_normalise = get_pareto_frontier(
+        population_avec_score_normalise)
+    generate_csv('solutions_pareto', population_avec_score_normalise,
+                 ["Solution", "Compacite", "Proximite", "Production"])
 
 
 def get_map_dimension(file_path):
@@ -46,7 +64,6 @@ def get_map_dimension(file_path):
                 for element_nb in range(len(line) - 1):
                     collumn_nb += 1
     return (line_nb, collumn_nb)
-
 
 
 def load_usage_map(file_path):
@@ -139,7 +156,10 @@ def plot_solution(solution):
         bought_plot[solution[i]] = 5
 
     fig, axs = plt.subplots(1, 1, figsize=(10, 9))
-    fig.canvas.manager.set_window_title("solution Plot: " + "coût: " + str(cost_bought_plot(solution)) + "  compacity: " + str(compacite(solution)) + " proximite: " + str(proximite(solution)) + " production: " + str(1/production(solution)))
+    fig.canvas.manager.set_window_title(
+        "solution Plot: " + "coût: " + str(cost_bought_plot(solution)) + "  compacity: " + str(
+            compacite(solution)) + " proximite: " + str(proximite(solution)) + " production: " + str(
+            1 / production(solution)))
     plt.imshow(bought_plot, cmap='gray', interpolation='nearest')
     plt.show()
 
@@ -170,7 +190,8 @@ def plot_pareto(population):
 
     # ax.scatter([0], [0], [0], c='g', picker=True, pickradius=5)
 
-    ax.scatter([s[1] for s in population_avec_score_normalise], [s[2] for s in population_avec_score_normalise], [s[3] for s in population_avec_score_normalise], c='b', picker=True, pickradius=0.1)
+    ax.scatter([s[1] for s in population_avec_score_normalise], [s[2] for s in population_avec_score_normalise],
+               [s[3] for s in population_avec_score_normalise], c='b', picker=True, pickradius=0.1)
     ax.scatter([s[1] for s in pareto_frontier], [s[2] for s in pareto_frontier], [s[3] for s in pareto_frontier], c='r',
                picker=True, pickradius=0.1)
     # ax.legend()
@@ -182,10 +203,10 @@ def plot_pareto(population):
     ax.set_zlim(min(liste_production), max(liste_production))
     fig.canvas.mpl_connect('pick_event', lambda event: onpick(event, pareto_frontier))
 
-    #fig, ax = plt.subplots()
-    #ax.plot(best_scores)
-    #ax.set_xlabel("Iterations")
-    #ax.set_ylabel("Best Final Score")
+    # fig, ax = plt.subplots()
+    # ax.plot(best_scores)
+    # ax.set_xlabel("Iterations")
+    # ax.set_ylabel("Best Final Score")
 
     plt.show()
 
@@ -240,13 +261,15 @@ def cost_bought_plot(bought_plot):
 # Comme tous les critères sont a minimiser, le point idéal est le point (0, 0, 0)
 
 def compacite(solution):
-    """ Computes the inverse of mean of the euclidean distance of a bought parcel and center one.
+    """ Computes the inverse of mean of the Euclidean distance of a bought parcel and center one.
     """
     # Trouver la parcelle du milieu
     milieuX = sum(plot[0] for plot in solution) / len(solution)
     milieuY = sum(plot[1] for plot in solution) / len(solution)
     # Critère à être minimiser
-    return (sum((((plot[0] - milieuX)**2 + (plot[1] - milieuY)**2) for plot in solution)) / len(solution))**(1/2)
+    return (sum((((plot[0] - milieuX) ** 2 + (plot[1] - milieuY) ** 2) for plot in solution)) / len(solution)) ** (
+            1 / 2)
+
 
 def proximite(solution):
     """ Computes the mean of the euclidian distance of a bought parcel and inhabited zone
@@ -274,7 +297,6 @@ def solution_generator():
     while cost_bought_plot(bought_plot) < BUDGET:
         # obtenir un index aléatoire dans le tableau aplati
 
-
         new_plot_flat_index = np.random.choice(COST_MAP.size)
         # convertir l'index aplati en indices de ligne et de colonne
         new_plot_index = np.unravel_index(new_plot_flat_index, COST_MAP.shape)
@@ -298,7 +320,6 @@ def population_generator(population_size):
         generation.append(solution_generator())
 
     return generation
-
 
 
 def reproduction(parent1, parent2):
@@ -347,12 +368,10 @@ def reproduction_population(population):
         # Generation of two children
         child1, child2 = reproduction(parent1, parent2)
 
-
-        if child1 is not None and child2 is not None :
+        if child1 is not None and child2 is not None:
             population.append(child1)
             population.append(child2)
         return population
-
 
 
 def mutation_population(population):
@@ -375,7 +394,6 @@ def mutation_population(population):
     return population
 
 
-
 def selection(population, population_size):
     population = supression_double(population)
 
@@ -386,7 +404,6 @@ def selection(population, population_size):
     # Ajouter des solutions aléatoire pour avoir la bonne taille
     while len(filtered_population) < population_size:
         filtered_population.append(solution_generator())
-
 
     # Réévaluer la population actuelle
     population_avec_score_separe = population_with_normalized_score(filtered_population)
@@ -464,7 +481,7 @@ def genetic_algorithm(initial_population_size, iteration):
         nouvelle_population = mutation_population(nouvelle_population)
         nouvelle_population = selection(nouvelle_population, initial_population_size)
     print(" Solution Cost: € {:,}".format(
-    cost_bought_plot(nouvelle_population[0])))
+        cost_bought_plot(nouvelle_population[0])))
 
     plot_pareto(nouvelle_population)
 
@@ -485,8 +502,10 @@ def population_with_separate_score(population):
     """
     generation_avec_score = []
     for i in range(len(population)):
+        scores_separes = score_separe(population[i])
         generation_avec_score.append(
-            (population[i], score_separe(population[i])[0], score_separe(population[i])[1], score_separe(population[i])[2]))
+            (population[i], scores_separes[0], scores_separes[1],
+             scores_separes[2]))
     return generation_avec_score
 
 
@@ -501,12 +520,6 @@ def population_with_normalized_score(population):
     min_proximite = min(generation_avec_score, key=lambda x: x[2])[2]
     max_production = max(generation_avec_score, key=lambda x: x[3])[3]
     min_production = min(generation_avec_score, key=lambda x: x[3])[3]
-
-
-
-
-
-
 
     """
         # Trouver l'amplitude maximale pour chaque critère
@@ -616,17 +629,92 @@ def find_double_sublists(lst):
     print(double_sublists)
 
 
-
-def electre(population_finale, poids_compacite = 0.33, poids_proximite = 0.33, poids_production = 0.33):
+def electre(population_finale, poids_compacite=0.33, poids_proximite=0.33, poids_production=0.33):
     population_avec_score_normalise = population_with_normalized_score(population_finale)
     pareto_frontier, population_avec_score_normalise = get_pareto_frontier(
         population_avec_score_normalise)
     liste_de_scores_finaux = []
     for solution in pareto_frontier:
-        solution_avec_score_finale = (solution[0], solution[1]*poids_compacite + solution[2]*poids_proximite + solution[3]*poids_production)
+        solution_avec_score_finale = (
+            solution[0], solution[1] * poids_compacite + solution[2] * poids_proximite + solution[3] * poids_production)
         liste_de_scores_finaux.append(solution_avec_score_finale)
     liste_de_scores_finaux_triee = sorted(liste_de_scores_finaux, key=lambda x: x[1], reverse=False)
     return liste_de_scores_finaux_triee[0][0]
+
+
+""" PROMETHEE FUNCTIONS """
+
+
+def preference(score_sol_1, score_sol_2, seuil_indeference, seuil_preference):
+    difference = score_sol_1 - score_sol_2
+    if difference < seuil_indeference:
+        return 0
+    elif difference > seuil_preference:
+        return 1
+    else:
+        return (difference - seuil_indeference) / (seuil_preference - seuil_indeference)
+
+
+def global_preference(solution_1, solution_2):
+    """
+    Computes the global preference of the solution_1 over solution_2.
+    WEIGHTS = [0.33, 0.33, 0.33]
+    Returns: Preference degree of solution_1 over solution_2.
+    """
+    weights = [.33, .33, .33]
+    preference_list = []
+    for i in range(1, len(solution_1)):
+        criteria_preference = preference(solution_1[i], solution_2[i], 0.25, 0.75)
+        preference_list.append(criteria_preference)
+    return sum([weights[i] * preference_list[i] for i in range(len(preference_list))])
+
+
+def generate_preference_matrix(population_avec_score):
+    preference_matrix = []
+    for i, solution_1 in enumerate(population_avec_score):
+        row = []
+        for j, solution_2 in enumerate(population_avec_score):
+            if i != j:
+                preference_sol1_over_sol2 = global_preference(solution_1, solution_2)
+                row.append(preference_sol1_over_sol2)
+            else:
+                row.append(0)
+        preference_matrix.append(row)
+    return preference_matrix
+
+
+def compute_flow_scores(preference_matrix):
+    net_flow_scores = []
+    for i, solution_1 in enumerate(preference_matrix):
+        positive_flow_score = 0
+        negative_flow_score = 0
+        for j, solution_2 in enumerate(preference_matrix):
+            if i != j:
+                positive_flow_score += preference_matrix[i][j]
+                negative_flow_score += preference_matrix[j][i]
+        net_flow_scores.append((positive_flow_score - negative_flow_score) / (len(preference_matrix) - 1))
+    return net_flow_scores
+
+
+def promethee(population_amelioree):
+    """
+    Rank the solutions using the PROMETHEE method.
+    # 1: Generate a preference matrix
+        For every pair of solutions
+            Calculate preference degree
+            Calculate the global preference for every pair of solution
+    # 2: Computes positive, negative and net flow scores
+    # 3: Rank the solutions
+    """
+    population_avec_score = population_with_separate_score(population_amelioree)
+    preference_matrix = generate_preference_matrix(population_avec_score)
+    net_flow_scores = compute_flow_scores(preference_matrix)
+    ranked_solutions = sorted(zip(population_amelioree, net_flow_scores), key=lambda x: x[1], reverse=True)
+
+    # Generate csv files with the ranked solutions and its net flow score
+    generate_csv("ranked_solutions", ranked_solutions, ["solution", "net_flow_score"])
+
+    return ranked_solutions
 
 
 if __name__ == "__main__":
@@ -637,8 +725,6 @@ if __name__ == "__main__":
     USAGE_MAP = load_usage_map(USAGE_MAP_PATH)
     DISTANCE_MAP = matrice_dist()
 
-
-    # plot_solution(solution_generator(cost_map, usage_map))
     # Plot the matrix data
     if USING_DATA_PLOT:
         configure_data_plot()
@@ -647,18 +733,11 @@ if __name__ == "__main__":
     """2: INITIAL POPULATION """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    population_amelioree = genetic_algorithm(400, 400)
-    # Determine the dominant solutions
-    # Plot the frontier and generate csv files
+    population_amelioree = genetic_algorithm(300, 200)
+    # Generate csv files for pareto-optimal solutions
+    generate_csv_pareto_solutions()
 
     """3: MCDA: ELECTRE or PROMETHEE"""
 
-    #poids_proximite = int(input("poids proximité (33% si rien):"))
-    #poids_compacite = int(input("poids compacité (33% si rien):"))
-    #poids_production = 1 - poids_compacite - poids_proximite
-    solution_finale = electre(population_amelioree)
-    print(solution_finale)
-    plot_solution(solution_finale)
-
-
-    # Rank the solutions from the Pareto Frontier according to ELECTRE/PROMETHEE.
+    ranked_solutions = promethee(population_amelioree)
+    plot_solution(ranked_solutions[0][0])
