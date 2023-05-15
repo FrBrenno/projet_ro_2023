@@ -17,8 +17,6 @@ USAGE_MAP_PATH = "Usage_map.txt"
 MAP_COST_RATIO = 10000
 BUDGET = 500000
 
-random.seed(42)
-
 # TEST MAP PARAMETERS
 TEST_MAP_PATH = "20x20_"
 TEST_MAP_DIMENSION = (20, 20)
@@ -169,8 +167,7 @@ def plot_pareto(population):
 
     # ax.scatter([0], [0], [0], c='g', picker=True, pickradius=5)
 
-   #ax.scatter([s[1] for s in population_avec_score_normalise], [s[2] for s in population_avec_score_normalise],
-               #[s[3] for s in population_avec_score_normalise], c='b', picker=True, pickradius=0.1)
+    #ax.scatter([s[1] for s in population_avec_score_normalise], [s[2] for s in population_avec_score_normalise], [s[3] for s in population_avec_score_normalise], c='b', picker=True, pickradius=0.1)
     ax.scatter([s[1] for s in pareto_frontier], [s[2] for s in pareto_frontier], [s[3] for s in pareto_frontier], c='r',
                picker=True, pickradius=0.1)
     # ax.legend()
@@ -196,9 +193,9 @@ def plot_pareto(population):
 def onpick(event, normalise):
     ind = event.ind
 
-    print(ind)
+    #print(ind)
     solution = normalise[ind[0]][0]
-    print(solution)
+    #print(solution)
     plot_solution(solution)
 
 
@@ -246,8 +243,7 @@ def compacite(solution):
     milieuX = sum(plot[0] for plot in solution) / len(solution)
     milieuY = sum(plot[1] for plot in solution) / len(solution)
     # Critère à être minimiser
-    return sum(((plot[0] - milieuX) ** 2 + (plot[1] - milieuY) ** 2)**(1/2) for plot in solution)
-
+    return sum(((plot[0] - milieuX)**2 + (plot[1] - milieuY)**2)**(1/2) for plot in solution) / len(solution)
 
 def proximite(solution):
     """ Computes the mean of the euclidian distance of a bought parcel and inhabited zone
@@ -271,8 +267,11 @@ def solution_generator():
     """
     bought_plot = []
     # vérifie le buget
+    i=0
     while cost_bought_plot(bought_plot) < BUDGET:
         # obtenir un index aléatoire dans le tableau aplati
+        np.random.seed(18+i)
+        i+=1
         new_plot_flat_index = np.random.choice(COST_MAP.size)
         # convertir l'index aplati en indices de ligne et de colonne
         new_plot_index = np.unravel_index(new_plot_flat_index, COST_MAP.shape)
@@ -320,17 +319,10 @@ def reproduction(parent1, parent2):
             child2.append(parcel)
     # Si l'enfant est vide, ne pas effectuer la reproduction
     child1.extend(double_solutions), child2.extend(double_solutions)
-    if not child1 or not child2:
-        print('probleme reprodcution 2')
-        return None, None
     while cost_bought_plot(child1) > BUDGET:
         child1.pop()
     while cost_bought_plot(child2) > BUDGET:
         child2.pop()
-    while cost_bought_plot(child1) < BUDGET - 80000:
-        child1.append((random.randint(0, 69), random.randint(0, 169)))
-    while cost_bought_plot(child2) < BUDGET - 80000:
-        child2.append((random.randint(0, 69), random.randint(0, 169)))
     return list(set(child1)), list(set(child2))
 
 
@@ -340,11 +332,16 @@ def reproduction_population(population):
     Args:
         population: set of solutions
     """
-    for i in range(0, len(population) - 10, 2):
+    for i in range(0, len(population), 2):
         # Selection of the parents
+        random.seed(21+i)
         random1 = random.randint(0, len(population) - 1)
+        random.seed(29+i)
         random2 = random.randint(0, len(population) - 1)
+        j=0
         while random1 == random2:
+            random.seed(35+j)
+            j+=1
             random2 = random.randint(0, len(population) - 1)
 
         parent1 = population[random1]
@@ -362,17 +359,25 @@ def reproduction_population(population):
 
 def mutation_population(population):
     nouvelle_solution_mutee = []
+    i=0
     for solution in population:
         copie_solution = copy.deepcopy(solution)
-
+        np.random.seed(42+i)
+        i+=1
         new_plot_flat_index = np.random.choice(COST_MAP.size)
         new_plot_index = np.unravel_index(new_plot_flat_index, COST_MAP.shape)
+        j=0
         while USAGE_MAP[new_plot_index] != 0 or new_plot_index in copie_solution:
+            np.random.seed(51+j)
+            j+=1
             new_plot_flat_index = np.random.choice(COST_MAP.size)
             new_plot_index = np.unravel_index(new_plot_flat_index, COST_MAP.shape)
 
         copie_solution.append(new_plot_index)
+        j=0
         while cost_bought_plot(copie_solution) > BUDGET:
+            random.seed(67+j)
+            j+=1
             copie_solution.pop(random.randint(0, len(copie_solution) - 1))
         nouvelle_solution_mutee.append(copie_solution)
 
@@ -618,8 +623,7 @@ def find_double_sublists(lst):
     print(double_sublists)
 
 
-
-def electre(population_finale, poids_compacite = 0.33, poids_proximite = 0.33, poids_production = 0.33):
+def electre(population_finale, poids_compacite = 0.0, poids_proximite = 0.0, poids_production = 1.0):
     population_avec_score_normalise = population_with_normalized_score(population_finale)
     pareto_frontier, population_avec_score_normalise = get_pareto_frontier(
         population_avec_score_normalise)
@@ -649,19 +653,21 @@ if __name__ == "__main__":
     """2: INITIAL POPULATION """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    population_amelioree = genetic_algorithm(500, 400)
-    print(population_amelioree[0])
+    population_amelioree = genetic_algorithm(300, 300)
     # Determine the dominant solutions
     # Plot the frontier and generate csv files
 
     """3: MCDA: ELECTRE or PROMETHEE"""
 
-    #poids_proximite = int(input("poids proximité (33% si rien):"))
-    #poids_compacite = int(input("poids compacité (33% si rien):"))
-    #poids_production = 1 - poids_compacite - poids_proximite
     solution_finale = electre(population_amelioree)
-    print(solution_finale)
     plot_solution(solution_finale)
-
-
+    """
+    true = True
+    while true:
+        poids_compacite = float(input("poids compacité (33% si rien):"))
+        poids_proximite = float(input("poids proximité (33% si rien):"))
+        poids_production = float(input("poids production (33% si rien):"))
+        solution_finale = electre(population_amelioree, poids_compacite, poids_proximite, poids_production)
+        plot_solution(solution_finale)
+"""
     # Rank the solutions from the Pareto Frontier according to ELECTRE/PROMETHEE.
