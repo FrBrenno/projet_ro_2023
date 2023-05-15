@@ -381,12 +381,27 @@ def selection(population, population_size):
     for solution in population:
         if solution not in population_without_doubles:
             population_without_doubles.append(solution)
+
+
     population = population_without_doubles
 
     pop_avec_norm_score = population_with_normalized_score(population)
+    pop_avec_norm_score2 = []
+    for sol1_ac_score in pop_avec_norm_score:
+        is_unique = True
+        for sol2_ac_score in pop_avec_norm_score:
+            # Check si les deux solutions sont différentes et que les scores sont très proches
+            difference_compacite = abs(sol1_ac_score[1] - sol2_ac_score[1])
+            difference_proximite = abs(sol1_ac_score[2] - sol2_ac_score[2])
+            difference_production = abs(sol1_ac_score[3] - sol2_ac_score[3])
+            if sol1_ac_score != sol2_ac_score and difference_compacite < 0.03 and difference_proximite < 0.01 and difference_production < 0.001:
+                is_unique = False
+
+        if is_unique:
+            pop_avec_norm_score2.append(sol1_ac_score)
 
 
-    filtered_population = [solution[0] for solution in pop_avec_norm_score]
+    filtered_population = [solution[0] for solution in pop_avec_norm_score2]
 
 
     # Ajouter des solutions aléatoire pour avoir la bonne taille
@@ -626,7 +641,7 @@ if __name__ == "__main__":
     """2: INITIAL POPULATION """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    population_amelioree = genetic_algorithm(200, 400)
+    population_amelioree = genetic_algorithm(400, 400)
     # Determine the dominant solutions
     # Plot the frontier and generate csv files
 
