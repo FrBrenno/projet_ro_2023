@@ -681,7 +681,7 @@ def global_preference(solution_1, solution_2):
     Returns: Preference degree of solution_1 over solution_2.
     """
     preference_list = []
-    for i in range(1, len(SEUIL_INDIFFERENCE)):
+    for i in range(1, len(solution_1)):
         criteria_preference = preference(solution_1[i], solution_2[i], SEUIL_INDIFFERENCE[i - 1],
                                          SEUIL_PREFERENCE[i - 1])
         preference_list.append(criteria_preference)
