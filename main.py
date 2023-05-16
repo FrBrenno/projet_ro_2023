@@ -20,10 +20,7 @@ BUDGET = 500000
 # ALGORITHM PARAMETERS
 """ GENETIC PARAMETERS """
 
-
 """ PROMETHEE PARAMETERS """
-SEUIL_INDEFERENCE = 0.25
-SEUIL_PREFERENCE = 0.75
 WEIGHTS = [.33, .33, .33]
 
 # TEST MAP PARAMETERS
@@ -497,10 +494,6 @@ def genetic_algorithm(initial_population_size, iteration):
         nouvelle_population = mutation_population(nouvelle_population)
         nouvelle_population = selection(nouvelle_population, initial_population_size)
 
-    print(" Solution Cost: € {:,}".format(
-        cost_bought_plot(nouvelle_population[0])))
-    plot_pareto(nouvelle_population)
-
     return nouvelle_population
 
 
@@ -536,7 +529,6 @@ def population_with_normalized_score(population):
     min_proximite = min(generation_avec_score, key=lambda x: x[2])[2]
     max_production = max(generation_avec_score, key=lambda x: x[3])[3]
     min_production = min(generation_avec_score, key=lambda x: x[3])[3]
-
 
     # Normaliser les scores pour chaque critère
     population_with_normalized_score = []
@@ -653,14 +645,33 @@ def electre(population_finale, poids_compacite=0.33, poids_proximite=0.33, poids
 """ PROMETHEE FUNCTIONS """
 
 
-def preference(score_sol_1, score_sol_2, seuil_indeference, seuil_preference):
+def compute_thresholds(data):
+    """
+    Computes the thresholds for the preference function.
+    Threshold interval are centered in the mean of the criteria. Each threshold is half the distance between the mean.
+    """
+    SEUIL_INDIFF = []
+    SEUIL_PREF = []
+    for i in range(1, len(data[0])):
+        min_value = min([row[i] for row in data])
+        max_value = max([row[i] for row in data])
+        range_mean = (max_value - min_value) / 2
+        seuil_indifference = range_mean / 2
+        seuil_preference = range_mean * 3 / 2
+
+        SEUIL_INDIFF.append(seuil_indifference)
+        SEUIL_PREF.append(seuil_preference)
+    return SEUIL_INDIFF, SEUIL_PREF
+
+
+def preference(score_sol_1, score_sol_2, seuil_indifference, seuil_preference):
     difference = score_sol_1 - score_sol_2
-    if difference < seuil_indeference:
+    if difference < seuil_indifference:
         return 0
     elif difference > seuil_preference:
         return 1
     else:
-        return (difference - seuil_indeference) / (seuil_preference - seuil_indeference)
+        return (difference - seuil_indifference) / (seuil_preference - seuil_indifference)
 
 
 def global_preference(solution_1, solution_2):
@@ -670,8 +681,9 @@ def global_preference(solution_1, solution_2):
     Returns: Preference degree of solution_1 over solution_2.
     """
     preference_list = []
-    for i in range(1, len(solution_1)):
-        criteria_preference = preference(solution_1[i], solution_2[i], SEUIL_INDEFERENCE, SEUIL_PREFERENCE)
+    for i in range(1, len(SEUIL_INDIFFERENCE)):
+        criteria_preference = preference(solution_1[i], solution_2[i], SEUIL_INDIFFERENCE[i - 1],
+                                         SEUIL_PREFERENCE[i - 1])
         preference_list.append(criteria_preference)
     return sum([WEIGHTS[i] * preference_list[i] for i in range(len(preference_list))])
 
@@ -703,7 +715,7 @@ def compute_flow_scores(preference_matrix):
     return net_flow_scores
 
 
-def promethee(population_amelioree):
+def promethee(population):
     """
     Rank the solutions using the PROMETHEE method.
     # 1: Generate a preference matrix
@@ -713,13 +725,12 @@ def promethee(population_amelioree):
     # 2: Computes positive, negative and net flow scores
     # 3: Rank the solutions
     """
-    population_avec_score = population_with_separate_score(population_amelioree)
-    preference_matrix = generate_preference_matrix(population_avec_score)
+    preference_matrix = generate_preference_matrix(population)
     net_flow_scores = compute_flow_scores(preference_matrix)
-    ranked_solutions = sorted(zip(population_amelioree, net_flow_scores), key=lambda x: x[1], reverse=True)
+    ranked_solutions = sorted(zip(population, net_flow_scores), key=lambda x: x[1], reverse=True)
 
     # Generate csv files with the ranked solutions and its net flow score
-    generate_csv("ranked_solutions", ranked_solutions, ["solution", "net_flow_score"])
+    generate_csv("ranked_solutions", ranked_solutions, ["solution", "compacity", "proximity", "production", "net_flow_score"])
 
     return ranked_solutions
 
@@ -740,13 +751,15 @@ if __name__ == "__main__":
     """2: GENETIC ALGORITHM """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    population_amelioree = genetic_algorithm(400, 500)
+    population_amelioree = genetic_algorithm(100, 200)
     # Generate csv files for pareto-optimal solutions
     generate_csv_pareto_solutions()
 
-    """3: MCDA: ELECTRE or PROMETHEE"""
+    """3: MCDA: PROMETHEE METHOD """
+    population_avec_score = population_with_separate_score(population_amelioree)
+    SEUIL_INDIFFERENCE, SEUIL_PREFERENCE = compute_thresholds(population_avec_score)
+    ranked_solutions = promethee(population_avec_score)
+    best_solution = ranked_solutions[0][0][0]
+    plot_solution(best_solution)
 
-    ranked_solutions = promethee(population_amelioree)
-    plot_solution(ranked_solutions[0][0])
-
-    generate_csv("best_solution_promethee", ranked_solutions[0][0], ["x", "y"])
+    generate_csv("best_solution_promethee", best_solution, ["x", "y"])
