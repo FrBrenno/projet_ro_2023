@@ -21,7 +21,7 @@ BUDGET = 500000
 """ GENETIC PARAMETERS """
 
 """ PROMETHEE PARAMETERS """
-WEIGHTS = [.33, .33, .33]
+WEIGHTS = [.34, .33, .33]
 
 # TEST MAP PARAMETERS
 TEST_MAP_PATH = "20x20_"
@@ -730,7 +730,7 @@ def promethee(population):
     ranked_solutions = sorted(zip(population, net_flow_scores), key=lambda x: x[1], reverse=True)
 
     # Generate csv files with the ranked solutions and its net flow score
-    generate_csv("ranked_solutions", ranked_solutions, ["solution", "compacity", "proximity", "production", "net_flow_score"])
+    generate_csv("ranked_solutions", ranked_solutions, ["solution, compacity, proximity, production", "net_flow_score"])
 
     return ranked_solutions
 
@@ -751,7 +751,7 @@ if __name__ == "__main__":
     """2: GENETIC ALGORITHM """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    population_amelioree = genetic_algorithm(100, 200)
+    population_amelioree = genetic_algorithm(400, 200)
     # Generate csv files for pareto-optimal solutions
     generate_csv_pareto_solutions()
 
@@ -759,7 +759,7 @@ if __name__ == "__main__":
     population_avec_score = population_with_separate_score(population_amelioree)
     SEUIL_INDIFFERENCE, SEUIL_PREFERENCE = compute_thresholds(population_avec_score)
     ranked_solutions = promethee(population_avec_score)
+
     best_solution = ranked_solutions[0][0][0]
     plot_solution(best_solution)
-
     generate_csv("best_solution_promethee", best_solution, ["x", "y"])
