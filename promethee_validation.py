@@ -13,16 +13,16 @@ from pprint import pprint
 """ PROMETHEE FUNCTIONS """
 
 
-def compute_thresholds(data):
+def compute_thresholds(dataset):
     """
     Computes the thresholds for the preference function.
     Threshold interval are centered in the mean of the criteria. Each threshold is half the distance between the mean.
     """
     SEUIL_INDIFF = []
     SEUIL_PREF = []
-    for i in range(1, len(data[0])):
-        min_value = min([row[i] for row in data])
-        max_value = max([row[i] for row in data])
+    for i in range(1, len(dataset[0])):
+        min_value = min([row[i] for row in dataset])
+        max_value = max([row[i] for row in dataset])
         range_mean = (max_value - min_value) / 2
         seuil_indifference = range_mean / 2
         seuil_preference = range_mean * 3 / 2
@@ -101,7 +101,11 @@ def promethee(population_amelioree):
     """
     population_avec_score = population_amelioree
     preference_matrix = generate_preference_matrix(population_avec_score)
+    print("PREFERENCE MATRIX:")
+    pprint(preference_matrix)
     net_flow_scores = compute_flow_scores(preference_matrix)
+    print("NET FLOW SCORES:")
+    pprint(net_flow_scores)
     ranked_solutions = sorted(zip(population_amelioree, net_flow_scores), key=lambda x: x[1], reverse=True)
 
     return ranked_solutions
@@ -115,5 +119,17 @@ if __name__ == "__main__":
     ]
     WEIGHTS = [.3, .5, .2]
     SEUIL_INDIFFERENCE, SEUIL_PREFERENCE = compute_thresholds(data)
+    print("############### PROMETHEE VALIDATION SCRIPT ####################")
+    print("DATA:")
+    for item in data:
+        print(item)
+    print("WEIGHTS: \n{}".format(WEIGHTS))
+    print("SEUILS D'INDIFFERENCE: \n{}".format(SEUIL_INDIFFERENCE))
+    print("SEUILS DE PREFERRENCE: \n{}".format(SEUIL_PREFERENCE))
+    print("#################################################################")
+
     rank = promethee(data)
+
+    print("#################################################################")
+    print("RANK:")
     pprint(rank)
