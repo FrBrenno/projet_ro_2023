@@ -16,29 +16,34 @@ from pprint import pprint
 def compute_thresholds(dataset):
     """
     Computes the thresholds for the preference function.
-    Threshold interval are centered in the mean of the criteria. Each threshold is half the distance between the mean.
+    Indifference threshold is set to 40% of the range width.
+    Preference threshold is set to 60% of the range width.
     """
-    SEUIL_INDIFF = []
-    SEUIL_PREF = []
+    indiff_threshold = []
+    pref_threshold = []
     for i in range(1, len(dataset[0])):
         min_value = min([row[i] for row in dataset])
         max_value = max([row[i] for row in dataset])
-        range_mean = (max_value - min_value) / 2
-        seuil_indifference = range_mean / 2
-        seuil_preference = range_mean * 3 / 2
+        range_width = (max_value - min_value)
+        seuil_indifference = range_width * 0.40
+        seuil_preference = range_width * 0.60
 
-        SEUIL_INDIFF.append(seuil_indifference)
-        SEUIL_PREF.append(seuil_preference)
-    return SEUIL_INDIFF, SEUIL_PREF
+        indiff_threshold.append(seuil_indifference)
+        pref_threshold.append(seuil_preference)
+    return indiff_threshold, pref_threshold
 
 
-def preference(score_sol_1, score_sol_2, seuil_indeference, seuil_preference):
+def preference(score_sol_1, score_sol_2, seuil_indeference, seuil_preference, isToMinimise = False):
     """
     Computes the preference degree of solution_1 over solution_2.
     PARAMETERS: SEUIL_INDEFERENCE, SEUIL_PREFERENCE
     Returns: Preference degree of solution_1 over solution_2.
     """
-    difference = score_sol_1 - score_sol_2
+    if isToMinimise:
+        difference = score_sol_2 - score_sol_1
+    else:
+        difference = score_sol_1 - score_sol_2
+
     if difference < seuil_indeference:
         return 0
     elif difference > seuil_preference:
@@ -54,10 +59,12 @@ def global_preference(solution_1, solution_2):
     Returns: Preference degree of solution_1 over solution_2.
     """
     preference_list = []
-    for i in range(1, len(solution_1)):
-        criteria_preference = preference(solution_1[i], solution_2[i], SEUIL_INDIFFERENCE[i - 1],
-                                         SEUIL_PREFERENCE[i - 1])
-        preference_list.append(criteria_preference)
+    c1_preference = preference(solution_1[1], solution_2[1], SEUIL_INDIFFERENCE[0], SEUIL_PREFERENCE[0])
+    c2_preference = preference(solution_1[2], solution_2[2], SEUIL_INDIFFERENCE[1], SEUIL_PREFERENCE[1])
+    c3_preference = preference(solution_1[3], solution_2[3], SEUIL_INDIFFERENCE[2], SEUIL_PREFERENCE[2], True)
+    preference_list.append(c1_preference)
+    preference_list.append(c2_preference)
+    preference_list.append(c3_preference)
     return sum([WEIGHTS[i] * preference_list[i] for i in range(len(preference_list))])
 
 
@@ -67,7 +74,7 @@ def generate_preference_matrix(population_avec_score):
         row = []
         for j, solution_2 in enumerate(population_avec_score):
             if i != j:
-                preference_sol1_over_sol2 = round(global_preference(solution_1, solution_2), 3)
+                preference_sol1_over_sol2 = round(global_preference(solution_1, solution_2), 5)
                 row.append(preference_sol1_over_sol2)
             else:
                 row.append(0)
@@ -84,7 +91,7 @@ def compute_flow_scores(preference_matrix):
             if i != j:
                 positive_flow_score += preference_matrix[i][j]
                 negative_flow_score += preference_matrix[j][i]
-        net_flow = round((positive_flow_score - negative_flow_score) / (len(preference_matrix) - 1), 3)
+        net_flow = round((positive_flow_score - negative_flow_score) / (len(preference_matrix) - 1), 5)
         net_flow_scores.append(net_flow)
     return net_flow_scores
 
@@ -99,8 +106,7 @@ def promethee(population_amelioree):
     # 2: Computes positive, negative and net flow scores
     # 3: Rank the solutions
     """
-    population_avec_score = population_amelioree
-    preference_matrix = generate_preference_matrix(population_avec_score)
+    preference_matrix = generate_preference_matrix(population_amelioree)
     print("PREFERENCE MATRIX:")
     pprint(preference_matrix)
     net_flow_scores = compute_flow_scores(preference_matrix)

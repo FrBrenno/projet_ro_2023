@@ -5,6 +5,8 @@ from src.score import population_with_separate_score
 from src.promethee import compute_thresholds, promethee
 from src.pareto import get_pareto_frontier
 
+
+
 if __name__ == "__main__":
     """1: Loading the problem's maps"""
     MAP_DIMENSION = get_map_dimension(COST_MAP_PATH)
@@ -21,7 +23,7 @@ if __name__ == "__main__":
     """2: GENETIC ALGORITHM """
 
     # Generate initial population randomly ⇾ cover as much as possible the solution space
-    population = genetic_algorithm(50, 200, COST_MAP, DISTANCE_MAP, USAGE_MAP, PRODUCTION_MAP)
+    population = genetic_algorithm(200, 300, COST_MAP, DISTANCE_MAP, USAGE_MAP, PRODUCTION_MAP)
 
     population_avec_scores = population_with_separate_score(population, DISTANCE_MAP, PRODUCTION_MAP)
     population_pareto, population_avec_scores = get_pareto_frontier(population_avec_scores)
@@ -33,9 +35,8 @@ if __name__ == "__main__":
                  ["Solution", "Compacite", "Proximite", "Production"])
 
     """3: MCDA: PROMETHEE METHOD """
-
     SEUIL_INDIFFERENCE, SEUIL_PREFERENCE = compute_thresholds(population_pareto)
-    ranked_solutions = promethee(population_pareto, SEUIL_INDIFFERENCE, SEUIL_PREFERENCE, WEIGHTS)
+    ranked_solutions = promethee(population_pareto, SEUIL_INDIFFERENCE, SEUIL_PREFERENCE)
 
     best_solution = ranked_solutions[0][0][0]
     plot_solution(best_solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP)

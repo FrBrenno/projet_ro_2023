@@ -1,5 +1,5 @@
 import copy
-from random import randint
+import random
 
 from src.config import *
 from src.score import *
@@ -8,6 +8,9 @@ from src.pareto import *
 import numpy as np
 
 from tqdm import tqdm
+
+random.seed(0)
+np.random.seed(0)
 
 """ UTILS FUNCTIONS """
 
@@ -115,10 +118,10 @@ def reproduction_population(population, COST_MAP):
     """
     for i in range(0, len(population), 2):
         # Selection of the parents
-        random1 = randint(0, len(population) - 1)
-        random2 = randint(0, len(population) - 1)
+        random1 = random.randint(0, len(population) - 1)
+        random2 = random.randint(0, len(population) - 1)
         while random1 == random2:
-            random2 = randint(0, len(population) - 1)
+            random2 = random.randint(0, len(population) - 1)
         parent1 = population[random1]
         parent2 = population[random2]
 
@@ -149,7 +152,7 @@ def mutation_population(population, COST_MAP, USAGE_MAP):
 
         # Vérifie que le budget n'est pas dépassé
         while cost_bought_plot(copie_solution, COST_MAP) > BUDGET:
-            copie_solution.pop(randint(0, len(copie_solution) - 1))
+            copie_solution.pop(random.randint(0, len(copie_solution) - 1))
         # Ajoute la solution mutée à la liste des solutions mutées
         nouvelle_solution_mutee.append(copie_solution)
 

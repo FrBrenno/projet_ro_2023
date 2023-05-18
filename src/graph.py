@@ -46,6 +46,7 @@ def plot_solution(solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP):
             compacite(solution)) + " proximite: " + str(proximite(solution, COST_MAP)) + " production: " + str(
             1 / production(solution, PRODUCTION_MAP)))
     plt.imshow(bought_plot, cmap='gray', interpolation='nearest')
+    fig.savefig(f'./img/best_solution.png')
     plt.show()
 
 
