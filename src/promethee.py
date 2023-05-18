@@ -47,12 +47,10 @@ def global_preference(solution_1, solution_2, SEUIL_INDIFFERENCE, SEUIL_PREFEREN
     Returns: Preference degree of solution_1 over solution_2.
     """
     preference_list = []
-    c1_preference = preference(solution_1[1], solution_2[1], SEUIL_INDIFFERENCE[0], SEUIL_PREFERENCE[0])
-    c2_preference = preference(solution_1[2], solution_2[2], SEUIL_INDIFFERENCE[1], SEUIL_PREFERENCE[1])
-    c3_preference = preference(solution_1[3], solution_2[3], SEUIL_INDIFFERENCE[2], SEUIL_PREFERENCE[2])
-    preference_list.append(c1_preference)
-    preference_list.append(c2_preference)
-    preference_list.append(c3_preference)
+    for i in range(1, len(solution_1)):
+        criteria_preference = preference(solution_1[i], solution_2[i], SEUIL_INDIFFERENCE[i - 1],
+                                         SEUIL_PREFERENCE[i - 1])
+        preference_list.append(criteria_preference)
     return sum([WEIGHTS[j] * preference_list[j] for j in range(len(preference_list))])
 
 
