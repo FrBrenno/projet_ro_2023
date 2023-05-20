@@ -39,6 +39,9 @@ def configure_data_plot(COST_MAP, PRODUCTION_MAP, USAGE_MAP, DISTANCE_MAP):
 
 
 def plot_solution(solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP):
+    """
+    Plot the solution on a map.
+    """
     bought_plot = copy.deepcopy(USAGE_MAP)
     for i in range(len(solution)):
         bought_plot[solution[i]] = 5
@@ -54,6 +57,11 @@ def plot_solution(solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP):
 
 
 def plot_pareto(pareto_frontier, population_avec_score_normalise, COST_MAP, PRODUCTION_MAP, USAGE_MAP):
+    """
+    Plot the pareto frontier on a map.
+    Allow to click on a point to see the solution.
+    """
+    # determine les listes des valeurs de chaque critère
     liste_compacite = [population_avec_score_normalise[i][1]
                        for i in range(len(population_avec_score_normalise))]
     liste_proximite = [population_avec_score_normalise[i][2]
@@ -68,16 +76,19 @@ def plot_pareto(pareto_frontier, population_avec_score_normalise, COST_MAP, PROD
     pareto_production = [pareto_frontier[i][3]
                          for i in range(len(pareto_frontier))]
 
+    # Plot the pareto frontier
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     fig.canvas.manager.set_window_title("Pareto Graph")
 
-    if PLOTTING_BLUE_POINTS:
+    if PLOTTING_BLUE_POINTS: # Plot the blue points wich are not in the pareto frontier
         ax.scatter([s[1] for s in population_avec_score_normalise], [s[2] for s in population_avec_score_normalise],
                    [s[3] for s in population_avec_score_normalise], c='b', picker=True, pickradius=0.1)
+    #plot the pareto frontier
     ax.scatter([s[1] for s in pareto_frontier], [s[2] for s in pareto_frontier], [s[3] for s in pareto_frontier], c='r',
                picker=True, pickradius=0.1)
 
+    # define the labels
     ax.set_xlabel("Compacité")
     ax.set_xlim(min(liste_compacite), max(liste_compacite))
     ax.set_ylabel("Proximité")
@@ -94,12 +105,18 @@ def plot_pareto(pareto_frontier, population_avec_score_normalise, COST_MAP, PROD
 
 
 def onpick(event, normalise, COST_MAP, USAGE_MAP, PRODUCTION_MAP):
+    """
+    When a point is clicked on the pareto frontier, plot the solution corresponding to this point.
+    """
     ind = event.ind
     solution = normalise[ind[0]][0]
     plot_solution(solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP)
 
 
 def create_2D_projection_image(scores, pareto_scores):
+    """
+    Create 2D projection images.
+    """
     names = ["compacity", "proximity", "production"]
     for i in range(3):
         for j in range(i + 1, 3):

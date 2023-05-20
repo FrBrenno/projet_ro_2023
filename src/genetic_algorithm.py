@@ -15,8 +15,11 @@ np.random.seed(0)
 """ UTILS FUNCTIONS """
 
 
-def cost_bought_plot(bought_plot, COST_MAP):
-    return sum(COST_MAP[bought_plot[i]] for i in range(len(bought_plot) - 1)) * MAP_COST_RATIO
+def cost_bought_plot(solution, COST_MAP):
+    """
+    Return the cost of a solution
+    """
+    return sum(COST_MAP[solution[i]] for i in range(len(solution) - 1)) * MAP_COST_RATIO
 
 
 def solution_generator(COST_MAP, USAGE_MAP):
@@ -52,6 +55,9 @@ def population_generator(population_size, COST_MAP, USAGE_MAP):
 
 
 def suppression_double(population):
+    """
+    Supprime les solutions en double dans la population
+    """
     population_without_doubles = []
     for solution in population:
         if solution not in population_without_doubles:
@@ -61,6 +67,9 @@ def suppression_double(population):
 
 
 def suppression_sol_trop_proche(population, DISTANCE_MAP, PRODUCTION_MAP):
+    """
+    Supprime les solutions trop proches dans la population
+    """
     pop_avec_norm_score = population_with_normalized_score(population, DISTANCE_MAP, PRODUCTION_MAP)
     pop_avec_norm_score2 = []
     for sol1_ac_score in pop_avec_norm_score:

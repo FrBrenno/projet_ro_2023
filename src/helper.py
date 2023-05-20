@@ -9,6 +9,9 @@ import numpy as np
 
 
 def get_map_dimension(file_path):
+    """
+    Get the dimension of the map
+    """
     path = "./data/" + TEST_MAP_PATH + \
            file_path if USING_TEST_MAP else "./data/" + file_path
     with open(path) as file:
@@ -79,6 +82,9 @@ def load_usage_map(file_path, MAP_DIMENSION):
 
 
 def matrice_dist(MAP_DIMENSION, USAGE_MAP):
+    """
+    Calcule la matrice des distances euclidiennes entre chaque parcelle et la parcelle la plus proche avec une valeur de 2 dans la matrice USAGE_MAP
+    """
     map_dimension = TEST_MAP_DIMENSION if USING_TEST_MAP else MAP_DIMENSION
     # Trouver l'indice de tous les éléments correspondant à des habitations
     idx_habitations = np.argwhere(USAGE_MAP == 2)
@@ -93,6 +99,9 @@ def matrice_dist(MAP_DIMENSION, USAGE_MAP):
 
 
 def generate_csv(filename, data, column_names):
+    """
+    Generate a csv file with the given data and column names
+    """
     os.makedirs('./results', exist_ok=True)
     with open('./results/' + filename + '.csv', 'w+', newline='') as file:
         writer = csv.writer(file)
