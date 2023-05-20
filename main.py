@@ -22,8 +22,6 @@ if __name__ == "__main__":
         plt.show()
 
     """2: GENETIC ALGORITHM """
-
-    # Generate initial population randomly ⇾ cover as much as possible the solution space
     population = genetic_algorithm(POPULATION_SIZE, NB_ITERATION, COST_MAP, DISTANCE_MAP, USAGE_MAP, PRODUCTION_MAP)
 
     population_avec_scores = population_with_separate_score(population, DISTANCE_MAP, PRODUCTION_MAP)
@@ -41,6 +39,6 @@ if __name__ == "__main__":
 
     best_solution = ranked_solutions[0][0][0]
     worst_solution = ranked_solutions[-1][0][0]
-    plot_solution(best_solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP)
-    plot_solution(worst_solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP)
+    plot_solution(best_solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP, "best_solution_promethee")
+    plot_solution(worst_solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP, "worst_solution_promethee")
     generate_csv("best_solution_promethee", best_solution, ["x", "y"])

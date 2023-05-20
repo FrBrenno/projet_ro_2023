@@ -38,7 +38,7 @@ def configure_data_plot(COST_MAP, PRODUCTION_MAP, USAGE_MAP, DISTANCE_MAP):
                      interpolation='nearest')
 
 
-def plot_solution(solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP):
+def plot_solution(solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP,  img_name):
     """
     Plot the solution on a map.
     """
@@ -52,7 +52,7 @@ def plot_solution(solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP):
             compacite(solution)) + " proximite: " + str(proximite(solution, COST_MAP)) + " production: " + str(
             1 / production(solution, PRODUCTION_MAP)))
     plt.imshow(bought_plot, cmap='gray', interpolation='nearest')
-    fig.savefig(f'./img/best_solution.png')
+    fig.savefig(f'./img/{img_name}.png')
     plt.show()
 
 
@@ -110,7 +110,7 @@ def onpick(event, normalise, COST_MAP, USAGE_MAP, PRODUCTION_MAP):
     """
     ind = event.ind
     solution = normalise[ind[0]][0]
-    plot_solution(solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP)
+    plot_solution(solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP, f"solution_{ind[0]}")
 
 
 def create_2D_projection_image(scores, pareto_scores):
