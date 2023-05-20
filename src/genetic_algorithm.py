@@ -176,14 +176,12 @@ def selection(population, population_size, COST_MAP, DISTANCE_MAP, PRODUCTION_MA
     population = suppression_double(population)
     population = suppression_sol_trop_proche(population, DISTANCE_MAP, PRODUCTION_MAP)
 
-    filtered_population = [solution[0] for solution in population]
-
     # Ajouter des solutions aléatoires pour avoir la bonne taille de population
-    while len(filtered_population) < population_size:
-        filtered_population.append(solution_generator(COST_MAP, USAGE_MAP))
+    while len(population) < population_size:
+        population.append(solution_generator(COST_MAP, USAGE_MAP))
 
     # Réévaluer la population actuelle
-    population_avec_score_separe = population_with_normalized_score(filtered_population, DISTANCE_MAP, PRODUCTION_MAP)
+    population_avec_score_separe = population_with_normalized_score(population, DISTANCE_MAP, PRODUCTION_MAP)
     # Trouver solutions dominantes par Pareto
     population_ac_score_pareto = []
     for solution1 in population_avec_score_separe:
