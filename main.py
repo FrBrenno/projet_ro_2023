@@ -40,5 +40,7 @@ if __name__ == "__main__":
     ranked_solutions = promethee(population_pareto, SEUIL_INDIFFERENCE, SEUIL_PREFERENCE)
 
     best_solution = ranked_solutions[0][0][0]
+    worst_solution = ranked_solutions[-1][0][0]
     plot_solution(best_solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP)
+    plot_solution(worst_solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP)
     generate_csv("best_solution_promethee", best_solution, ["x", "y"])

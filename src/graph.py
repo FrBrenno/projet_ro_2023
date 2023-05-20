@@ -83,9 +83,9 @@ def plot_pareto(pareto_frontier, population_avec_score_normalise, COST_MAP, PROD
 
     if PLOTTING_BLUE_POINTS: # Plot the blue points wich are not in the pareto frontier
         ax.scatter([s[1] for s in population_avec_score_normalise], [s[2] for s in population_avec_score_normalise],
-                   [s[3] for s in population_avec_score_normalise], c='b', picker=True, pickradius=0.1)
+                   [s[3] for s in population_avec_score_normalise], c='b', s=7, picker=True, pickradius=0.1)
     #plot the pareto frontier
-    ax.scatter([s[1] for s in pareto_frontier], [s[2] for s in pareto_frontier], [s[3] for s in pareto_frontier], c='r',
+    ax.scatter([s[1] for s in pareto_frontier], [s[2] for s in pareto_frontier], [s[3] for s in pareto_frontier], c='r', s=11,
                picker=True, pickradius=0.1)
 
     # define the labels

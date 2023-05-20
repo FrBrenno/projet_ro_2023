@@ -9,8 +9,7 @@ import numpy as np
 
 from tqdm import tqdm
 
-random.seed(0)
-np.random.seed(0)
+
 
 """ UTILS FUNCTIONS """
 
@@ -83,7 +82,7 @@ def suppression_sol_trop_proche(population, DISTANCE_MAP, PRODUCTION_MAP):
                 is_unique = False
 
         if is_unique:
-            pop_avec_norm_score2.append(sol1_ac_score)
+            pop_avec_norm_score2.append(sol1_ac_score[0])
     return pop_avec_norm_score2
 
 
