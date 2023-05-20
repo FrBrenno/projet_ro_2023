@@ -2,6 +2,11 @@
 
 
 def dominance(solution1, solution2):
+    """ Compare two solutions based on three criteria:
+    - solution[1] = compacite
+    - solution[2] = proximite
+    - solution[3] = production"""
+
     score_pareto = 0
     if solution1[1] <= solution2[1]:
         score_pareto += 1

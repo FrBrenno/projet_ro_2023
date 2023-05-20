@@ -55,6 +55,9 @@ def global_preference(solution_1, solution_2, SEUIL_INDIFFERENCE, SEUIL_PREFEREN
 
 
 def generate_preference_matrix(population_avec_score, SEUIL_INDIFFERENCE, SEUIL_PREFERENCE):
+    """
+    Generates a preference matrix for the population.
+    """
     preference_matrix = []
     for i, solution_1 in enumerate(population_avec_score):
         row = []
@@ -70,6 +73,9 @@ def generate_preference_matrix(population_avec_score, SEUIL_INDIFFERENCE, SEUIL_
 
 
 def compute_flow_scores(preference_matrix):
+    """
+    Computes the positive, negative and net flow scores for the population.
+    """
     net_flow_scores = []
     for i, solution_1 in enumerate(preference_matrix):
         positive_flow_score = 0
@@ -78,8 +84,8 @@ def compute_flow_scores(preference_matrix):
             if i != j:
                 positive_flow_score += preference_matrix[i][j]
                 negative_flow_score += preference_matrix[j][i]
-        new_flow = round((positive_flow_score - negative_flow_score) / (len(preference_matrix) - 1), 5)
-        net_flow_scores.append(new_flow)
+        net_flow = round((positive_flow_score - negative_flow_score) / (len(preference_matrix) - 1), 5)
+        net_flow_scores.append(net_flow)
     return net_flow_scores
 
 

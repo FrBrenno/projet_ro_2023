@@ -1,8 +1,11 @@
 import copy
+import os
+
 import matplotlib.pyplot as plt
 
 from src.genetic_algorithm import cost_bought_plot
 from src.fitness import *
+from src.config import PLOTTING_BLUE_POINTS
 
 
 def configure_data_plot(COST_MAP, PRODUCTION_MAP, USAGE_MAP, DISTANCE_MAP):
@@ -69,8 +72,9 @@ def plot_pareto(pareto_frontier, population_avec_score_normalise, COST_MAP, PROD
     ax = fig.add_subplot(111, projection='3d')
     fig.canvas.manager.set_window_title("Pareto Graph")
 
-    ax.scatter([s[1] for s in population_avec_score_normalise], [s[2] for s in population_avec_score_normalise],
-               [s[3] for s in population_avec_score_normalise], c='b', picker=True, pickradius=0.1)
+    if PLOTTING_BLUE_POINTS:
+        ax.scatter([s[1] for s in population_avec_score_normalise], [s[2] for s in population_avec_score_normalise],
+                   [s[3] for s in population_avec_score_normalise], c='b', picker=True, pickradius=0.1)
     ax.scatter([s[1] for s in pareto_frontier], [s[2] for s in pareto_frontier], [s[3] for s in pareto_frontier], c='r',
                picker=True, pickradius=0.1)
 
@@ -105,5 +109,6 @@ def create_2D_projection_image(scores, pareto_scores):
             ax2d.scatter(pareto_scores[j], pareto_scores[i], c="r")
             ax2d.set_xlabel(f'{names[j]}')
             ax2d.set_ylabel(f'{names[i]}')
+            os.makedirs('./img', exist_ok=True)
             fig.savefig(f'./img/2Dprojection_{names[j]}_{names[i]}.png')
             plt.close(fig)

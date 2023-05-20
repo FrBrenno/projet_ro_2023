@@ -9,8 +9,8 @@ def compacite(solution):
     # Trouver la parcelle du milieu
     milieu_x = sum(plot[0] for plot in solution) / len(solution)
     milieu_y = sum(plot[1] for plot in solution) / len(solution)
-    return (sum((((plot[0] - milieu_x) ** 2 + (plot[1] - milieu_y) ** 2) for plot in solution)) / len(solution)) ** (
-            1 / 2)
+    return (sum((((plot[0] - milieu_x) ** 2 + (plot[1] - milieu_y) ** 2) ** (
+            1 / 2) for plot in solution)) / len(solution))
 
 
 def proximite(solution, DISTANCE_MAP):

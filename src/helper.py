@@ -1,4 +1,5 @@
 import csv
+import os
 
 from scipy.spatial.distance import cdist
 
@@ -92,6 +93,7 @@ def matrice_dist(MAP_DIMENSION, USAGE_MAP):
 
 
 def generate_csv(filename, data, column_names):
+    os.makedirs('./results', exist_ok=True)
     with open('./results/' + filename + '.csv', 'w+', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(column_names)

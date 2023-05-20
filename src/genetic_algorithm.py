@@ -16,7 +16,7 @@ np.random.seed(0)
 
 
 def cost_bought_plot(bought_plot, COST_MAP):
-    return sum(COST_MAP[bought_plot[i]] for i in range(len(bought_plot) - 1)) * 10000
+    return sum(COST_MAP[bought_plot[i]] for i in range(len(bought_plot) - 1)) * MAP_COST_RATIO
 
 
 def solution_generator(COST_MAP, USAGE_MAP):
@@ -70,7 +70,7 @@ def suppression_sol_trop_proche(population, DISTANCE_MAP, PRODUCTION_MAP):
             difference_compacite = abs(sol1_ac_score[1] - sol2_ac_score[1])
             difference_proximite = abs(sol1_ac_score[2] - sol2_ac_score[2])
             difference_production = abs(sol1_ac_score[3] - sol2_ac_score[3])
-            if sol1_ac_score != sol2_ac_score and difference_compacite < 0.03 and difference_proximite < 0.01 and difference_production < 0.001:
+            if sol1_ac_score != sol2_ac_score and difference_compacite < SEUIL_DIFF_COMPACITE and difference_proximite < SEUIL_DIFF_PROXIMITE and difference_production < SEUIL_DIFF_PRODUCTION:
                 is_unique = False
 
         if is_unique:
@@ -165,9 +165,9 @@ def selection(population, population_size, COST_MAP, DISTANCE_MAP, PRODUCTION_MA
 
     # Éliminer les solutions doublons ou trop proches entre elles
     population = suppression_double(population)
-    pop_avec_norm_score2 = suppression_sol_trop_proche(population, DISTANCE_MAP, PRODUCTION_MAP)
+    population = suppression_sol_trop_proche(population, DISTANCE_MAP, PRODUCTION_MAP)
 
-    filtered_population = [solution[0] for solution in pop_avec_norm_score2]
+    filtered_population = [solution[0] for solution in population]
 
     # Ajouter des solutions aléatoires pour avoir la bonne taille de population
     while len(filtered_population) < population_size:
