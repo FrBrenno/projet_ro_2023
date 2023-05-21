@@ -5,9 +5,6 @@ from src.score import population_with_separate_score
 from src.promethee import compute_thresholds, promethee
 from src.pareto import get_pareto_frontier
 
-
-
-
 if __name__ == "__main__":
     save_config()
     """1: Loading the problem's maps"""
@@ -28,7 +25,7 @@ if __name__ == "__main__":
     population_avec_scores = population_with_separate_score(population, DISTANCE_MAP, PRODUCTION_MAP)
     population_pareto, population_avec_scores = get_pareto_frontier(population_avec_scores)
 
-    plot_pareto(population_pareto, population_avec_scores, COST_MAP, PRODUCTION_MAP, USAGE_MAP)
+    plot_pareto(population_pareto, population_avec_scores, COST_MAP, PRODUCTION_MAP, USAGE_MAP, DISTANCE_MAP)
 
     # Generate csv files for pareto-optimal solutions
     generate_csv('solutions_pareto', population_avec_scores,
@@ -39,17 +36,13 @@ if __name__ == "__main__":
     ranked_solutions = promethee(population_pareto, SEUIL_INDIFFERENCE, SEUIL_PREFERENCE)
 
     rank_solution_1 = ranked_solutions[0][0][0]
-    plot_solution(rank_solution_1, COST_MAP, USAGE_MAP, PRODUCTION_MAP, "best_solution_promethee")
+    plot_solution(rank_solution_1, COST_MAP, USAGE_MAP, PRODUCTION_MAP,DISTANCE_MAP, "best_solution_promethee")
     generate_csv("best_solution_promethee", rank_solution_1, ["x", "y"])
 
     rank_solution_2 = ranked_solutions[1][0][0]
-    plot_solution(rank_solution_2, COST_MAP, USAGE_MAP, PRODUCTION_MAP, "rank_solution_promethee_2")
+    plot_solution(rank_solution_2, COST_MAP, USAGE_MAP, PRODUCTION_MAP,DISTANCE_MAP, "rank_solution_promethee_2")
     generate_csv("rank_solution_2", rank_solution_2, ["x", "y"])
 
-    rank_solution_3 = ranked_solutions[2][0][0]
-    plot_solution(rank_solution_3, COST_MAP, USAGE_MAP, PRODUCTION_MAP, "rank_solution_promethee_3")
-    generate_csv("rank_solution_3", rank_solution_3, ["x", "y"])
-
     worst_solution = ranked_solutions[-1][0][0]
-    plot_solution(worst_solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP, "worst_solution_promethee")
+    plot_solution(worst_solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP,DISTANCE_MAP, "worst_solution_promethee")
     generate_csv("worst_solution", worst_solution, ["x", "y"])

@@ -8,6 +8,7 @@ from src.fitness import *
 from src.config import *
 
 
+
 def configure_data_plot(COST_MAP, PRODUCTION_MAP, USAGE_MAP, DISTANCE_MAP):
     """ Configure a figure where the matrix data is plotted.
     """
@@ -38,7 +39,7 @@ def configure_data_plot(COST_MAP, PRODUCTION_MAP, USAGE_MAP, DISTANCE_MAP):
                      interpolation='nearest')
 
 
-def plot_solution(solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP,  img_name):
+def plot_solution(solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP, DISTANCE_MAP, img_name):
     """
     Plot the solution on a map.
     """
@@ -49,17 +50,18 @@ def plot_solution(solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP,  img_name):
     fig, axs = plt.subplots(1, 1, figsize=(10, 9))
     fig.canvas.manager.set_window_title(img_name)
     plt.title(img_name +"\n" + "Coût: " + str(cost_bought_plot(solution, COST_MAP)) + " - Compacity: " + str(round(
-        compacite(solution), 4)) + " - Proximite: " + str(round(proximite(solution, COST_MAP), 4)) + " - Production: " + str(
+        compacite(solution), 4)) + " - Proximite: " + str(proximite(solution, DISTANCE_MAP)) + " - Production: " + str(
         round(1 / production(solution, PRODUCTION_MAP), 4)))
     plt.imshow(bought_plot, cmap='gray', interpolation='nearest')
 
-    fig.savefig(f'./img/{img_name}.png', )
+    if img_name != "pas_imprimer":
+        fig.savefig(f'./img/{img_name}.png', )
     plt.show()
 
 
 
 
-def plot_pareto(pareto_frontier, population_avec_score_normalise, COST_MAP, PRODUCTION_MAP, USAGE_MAP):
+def plot_pareto(pareto_frontier, population_avec_score_normalise, COST_MAP, PRODUCTION_MAP, USAGE_MAP, DISTANCE_MAP):
     """
     Plot the pareto frontier on a map.
     Allow to click on a point to see the solution.
@@ -99,7 +101,8 @@ def plot_pareto(pareto_frontier, population_avec_score_normalise, COST_MAP, PROD
     ax.set_zlabel("Production")
     ax.set_zlim(min(liste_production), max(liste_production))
     fig.canvas.mpl_connect('pick_event',
-                           lambda event: onpick(event, pareto_frontier, COST_MAP, USAGE_MAP, PRODUCTION_MAP))
+                           lambda event: onpick(event, pareto_frontier, COST_MAP, USAGE_MAP, PRODUCTION_MAP, DISTANCE_MAP))
+    plt.title("Pareto frontier" + "\n" + "    nb Itérations = " +str(NB_ITERATION) + "    population = " + str(POPULATION_SIZE) + "    seuil de différence = " + str(SEUIL_DIFF_COMPACITE) )
 
     plt.show()
 
@@ -109,13 +112,13 @@ def plot_pareto(pareto_frontier, population_avec_score_normalise, COST_MAP, PROD
     save_config()
 
 
-def onpick(event, normalise, COST_MAP, USAGE_MAP, PRODUCTION_MAP):
+def onpick(event, normalise, COST_MAP, USAGE_MAP, PRODUCTION_MAP, DISTANCE_MAP):
     """
     When a point is clicked on the pareto frontier, plot the solution corresponding to this point.
     """
     ind = event.ind
     solution = normalise[ind[0]][0]
-    plot_solution(solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP, f"solution_{ind[0]}")
+    plot_solution(solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP,DISTANCE_MAP, "pas_imprimer")
 
 
 def create_2D_projection_image(scores, pareto_scores):
