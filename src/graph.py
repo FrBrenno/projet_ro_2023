@@ -47,15 +47,11 @@ def plot_solution(solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP,  img_name):
         bought_plot[solution[i]] = 5
 
     fig, axs = plt.subplots(1, 1, figsize=(10, 9))
-    fig.canvas.manager.set_window_title(
-        "solution Plot: " + "coût: " + str(cost_bought_plot(solution, COST_MAP)) + "  compacity: " + str(
-            compacite(solution)) + " proximite: " + str(proximite(solution, COST_MAP)) + " production: " + str(
-            1 / production(solution, PRODUCTION_MAP)))
+    fig.canvas.manager.set_window_title(img_name)
     plt.title(img_name +"\n" + "Coût: " + str(cost_bought_plot(solution, COST_MAP)) + " - Compacity: " + str(round(
         compacite(solution), 4)) + " - Proximite: " + str(round(proximite(solution, COST_MAP), 4)) + " - Production: " + str(
         round(1 / production(solution, PRODUCTION_MAP), 4)))
     plt.imshow(bought_plot, cmap='gray', interpolation='nearest')
-    #save the image with it's title
 
     fig.savefig(f'./img/{img_name}.png', )
     plt.show()
@@ -110,7 +106,7 @@ def plot_pareto(pareto_frontier, population_avec_score_normalise, COST_MAP, PROD
     create_2D_projection_image([liste_compacite, liste_proximite, liste_production], [
         pareto_compacite, pareto_proximite, pareto_production])
 
-    save_config();
+    save_config()
 
 
 def onpick(event, normalise, COST_MAP, USAGE_MAP, PRODUCTION_MAP):
@@ -142,7 +138,7 @@ def create_2D_projection_image(scores, pareto_scores):
 
 def save_config():
     """
-    écris les paramètres de l'algo dans un fichier txt dans le dossier results
+    Écris les paramètres de l'algo dans un fichier txt dans le dossier results
     """
     os.makedirs('./results', exist_ok=True)
     with open("./results/config.txt", "w") as f:

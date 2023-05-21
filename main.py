@@ -9,7 +9,7 @@ from src.pareto import get_pareto_frontier
 
 
 if __name__ == "__main__":
-    save_config();
+    save_config()
     """1: Loading the problem's maps"""
     MAP_DIMENSION = get_map_dimension(COST_MAP_PATH)
     COST_MAP = load_map(COST_MAP_PATH, MAP_DIMENSION)
