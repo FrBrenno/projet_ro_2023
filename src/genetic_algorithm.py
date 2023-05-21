@@ -49,7 +49,6 @@ def population_generator(population_size, COST_MAP, USAGE_MAP):
     generation = []
     for i in range(population_size):
         generation.append(solution_generator(COST_MAP, USAGE_MAP))
-
     return generation
 
 
@@ -110,11 +109,23 @@ def reproduction(parent1, parent2, COST_MAP):
             child2.append(parcel)
     # Si l'enfant est vide, ne pas effectuer la reproduction
     child1.extend(double_solutions), child2.extend(double_solutions)
+
+    child1 = list(set(child1))
+    child2 = list(set(child2))
+
     while cost_bought_plot(child1, COST_MAP) > BUDGET:
         child1.pop()
     while cost_bought_plot(child2, COST_MAP) > BUDGET:
         child2.pop()
-    return list(set(child1)), list(set(child2))
+
+    cout_child1 = cost_bought_plot(child1, COST_MAP)
+    cout_child2 = cost_bought_plot(child2, COST_MAP)
+
+    if cout_child1 > BUDGET or cout_child2 > BUDGET:
+        print("Erreur dans la reproduction")
+
+
+    return child1, child2
 
 
 def reproduction_population(population, COST_MAP):
@@ -135,10 +146,11 @@ def reproduction_population(population, COST_MAP):
 
         # Generation of two children
         child1, child2 = reproduction(parent1, parent2, COST_MAP)
+
         if child1 is not None and child2 is not None:
             population.append(child1)
             population.append(child2)
-        return population
+    return population
 
 
 def mutation_population(population, COST_MAP, USAGE_MAP):
@@ -163,7 +175,6 @@ def mutation_population(population, COST_MAP, USAGE_MAP):
             copie_solution.pop(random.randint(0, len(copie_solution) - 1))
         # Ajoute la solution mutée à la liste des solutions mutées
         nouvelle_solution_mutee.append(copie_solution)
-
     population.extend(nouvelle_solution_mutee)
     return population
 
@@ -174,6 +185,8 @@ def selection(population, population_size, COST_MAP, DISTANCE_MAP, PRODUCTION_MA
     # Éliminer les solutions doublons ou trop proches entre elles
     population = suppression_double(population)
     population = suppression_sol_trop_proche(population, DISTANCE_MAP, PRODUCTION_MAP)
+
+
 
     # Ajouter des solutions aléatoires pour avoir la bonne taille de population
     while len(population) < population_size:
@@ -194,6 +207,7 @@ def selection(population, population_size, COST_MAP, DISTANCE_MAP, PRODUCTION_MA
     # Selectionner les meilleures solutions par dominance de Pareto
     sorted_liste = []
     for solution3 in sorted_pareto_liste:
+
         sorted_liste.append(solution3[0])
     return sorted_liste[:population_size]
 

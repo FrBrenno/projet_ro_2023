@@ -6,13 +6,15 @@ from src.promethee import compute_thresholds, promethee
 from src.pareto import get_pareto_frontier
 
 if __name__ == "__main__":
-    save_config()
+
     """1: Loading the problem's maps"""
     MAP_DIMENSION = get_map_dimension(COST_MAP_PATH)
     COST_MAP = load_map(COST_MAP_PATH, MAP_DIMENSION)
     PRODUCTION_MAP = load_map(PRODUCTION_MAP_PATH, MAP_DIMENSION)
     USAGE_MAP = load_usage_map(USAGE_MAP_PATH, MAP_DIMENSION)
     DISTANCE_MAP = matrice_dist(MAP_DIMENSION, USAGE_MAP)
+
+
 
     # Plot the matrix data
     if USING_DATA_PLOT:
@@ -26,6 +28,9 @@ if __name__ == "__main__":
     population_pareto, population_avec_scores = get_pareto_frontier(population_avec_scores)
 
     plot_pareto(population_pareto, population_avec_scores, COST_MAP, PRODUCTION_MAP, USAGE_MAP, DISTANCE_MAP)
+
+    #generate the config txt file
+    save_config()
 
     # Generate csv files for pareto-optimal solutions
     generate_csv('solutions_pareto', population_avec_scores,
