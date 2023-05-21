@@ -103,6 +103,7 @@ def promethee(population, SEUIL_INDIFFERENCE, SEUIL_PREFERENCE):
     net_flow_scores = compute_flow_scores(preference_matrix)
     ranked_solutions = sorted(zip(population, net_flow_scores), key=lambda x: x[1], reverse=True)
 
+    generate_csv("preference_matrix", preference_matrix, [f"{i}" for i in range(len(preference_matrix))])
     # Generate csv files with the ranked solutions and its net flow score
     generate_csv("ranked_solutions", ranked_solutions, ["solution, compacity, proximity, production", "net_flow_score"])
 

@@ -37,8 +37,18 @@ if __name__ == "__main__":
     SEUIL_INDIFFERENCE, SEUIL_PREFERENCE = compute_thresholds(population_pareto)
     ranked_solutions = promethee(population_pareto, SEUIL_INDIFFERENCE, SEUIL_PREFERENCE)
 
-    best_solution = ranked_solutions[0][0][0]
+    rank_solution_1 = ranked_solutions[0][0][0]
+    plot_solution(rank_solution_1, COST_MAP, USAGE_MAP, PRODUCTION_MAP, "best_solution_promethee")
+    generate_csv("best_solution_promethee", rank_solution_1, ["x", "y"])
+
+    rank_solution_2 = ranked_solutions[1][0][0]
+    plot_solution(rank_solution_2, COST_MAP, USAGE_MAP, PRODUCTION_MAP, "rank_solution_promethee_2")
+    generate_csv("rank_solution_2", rank_solution_2, ["x", "y"])
+
+    rank_solution_3 = ranked_solutions[2][0][0]
+    plot_solution(rank_solution_3, COST_MAP, USAGE_MAP, PRODUCTION_MAP, "rank_solution_promethee_3")
+    generate_csv("rank_solution_3", rank_solution_3, ["x", "y"])
+
     worst_solution = ranked_solutions[-1][0][0]
-    plot_solution(best_solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP, "best_solution_promethee")
     plot_solution(worst_solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP, "worst_solution_promethee")
-    generate_csv("best_solution_promethee", best_solution, ["x", "y"])
+    generate_csv("worst_solution", worst_solution, ["x", "y"])
