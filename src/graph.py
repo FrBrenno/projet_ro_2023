@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from src.genetic_algorithm import cost_bought_plot
 from src.fitness import *
-from src.config import PLOTTING_BLUE_POINTS
+from src.config import *
 
 
 def configure_data_plot(COST_MAP, PRODUCTION_MAP, USAGE_MAP, DISTANCE_MAP):
@@ -51,9 +51,16 @@ def plot_solution(solution, COST_MAP, USAGE_MAP, PRODUCTION_MAP,  img_name):
         "solution Plot: " + "coût: " + str(cost_bought_plot(solution, COST_MAP)) + "  compacity: " + str(
             compacite(solution)) + " proximite: " + str(proximite(solution, COST_MAP)) + " production: " + str(
             1 / production(solution, PRODUCTION_MAP)))
+    plt.title(img_name +"\n" + "Coût: " + str(cost_bought_plot(solution, COST_MAP)) + " - Compacity: " + str(round(
+        compacite(solution), 4)) + " - Proximite: " + str(round(proximite(solution, COST_MAP), 4)) + " - Production: " + str(
+        round(1 / production(solution, PRODUCTION_MAP), 4)))
     plt.imshow(bought_plot, cmap='gray', interpolation='nearest')
-    fig.savefig(f'./img/{img_name}.png')
+    #save the image with it's title
+
+    fig.savefig(f'./img/{img_name}.png', )
     plt.show()
+
+
 
 
 def plot_pareto(pareto_frontier, population_avec_score_normalise, COST_MAP, PRODUCTION_MAP, USAGE_MAP):
@@ -103,6 +110,8 @@ def plot_pareto(pareto_frontier, population_avec_score_normalise, COST_MAP, PROD
     create_2D_projection_image([liste_compacite, liste_proximite, liste_production], [
         pareto_compacite, pareto_proximite, pareto_production])
 
+    save_config();
+
 
 def onpick(event, normalise, COST_MAP, USAGE_MAP, PRODUCTION_MAP):
     """
@@ -129,3 +138,39 @@ def create_2D_projection_image(scores, pareto_scores):
             os.makedirs('./img', exist_ok=True)
             fig.savefig(f'./img/2Dprojection_{names[j]}_{names[i]}.png')
             plt.close(fig)
+
+
+def save_config():
+    """
+    écris les paramètres de l'algo dans un fichier txt dans le dossier results
+    """
+    os.makedirs('./results', exist_ok=True)
+    with open("./results/config.txt", "w") as f:
+        # MAP PARAMETERS
+        f.write("MAP PARAMETERS \n")
+        f.write(f"MAP_COST_RATIO = {MAP_COST_RATIO}\n")
+        f.write(f"BUDGET = {BUDGET}\n")
+        f.write("\n \n")
+
+        # ALGORITHM PARAMETERS
+        f.write("ALGORITHM PARAMETERS \n")
+        f.write(f"SEED = {SEED}\n")
+        f.write(f"POPULATION_SIZE = {POPULATION_SIZE}\n")
+        f.write(f"NB_ITERATION = {NB_ITERATION}\n")
+        f.write("\n")
+        f.write(f"SEUIL_DIFF_COMPACITE = {SEUIL_DIFF_COMPACITE}\n")
+        f.write(f"SEUIL_DIFF_PROXIMITE = {SEUIL_DIFF_PROXIMITE}\n")
+        f.write(f"SEUIL_DIFF_PRODUCTION = {SEUIL_DIFF_PRODUCTION}\n")
+        f.write("\n \n")
+
+
+        # PROMETHEE PARAMETERS
+        f.write("PROMETHEE PARAMETERS \n")
+        f.write(f"WEIGHTS = {WEIGHTS}\n")
+        f.write(f"INDIFFERENCE_THRESHOLD_EMPLACEMENT = {INDIFFERENCE_THRESHOLD_EMPLACEMENT}\n")
+        f.write(f"PREFERENCE_THRESHOLD_EMPLACEMENT = {PREFERENCE_THRESHOLD_EMPLACEMENT}\n")
+
+
+
+
+
