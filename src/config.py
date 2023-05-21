@@ -3,8 +3,9 @@ import numpy as np
 
 """ PARAMETERS  """
 # Random seed
-random.seed(0)      # 0
-np.random.seed(0)   # 0
+SEED = 0            #0
+random.seed(SEED)
+np.random.seed(SEED)
 
 
 # MAP PARAMETERS
@@ -19,9 +20,9 @@ BUDGET = 500000
 POPULATION_SIZE = 700   # 700
 NB_ITERATION = 700      # 700
 
-SEUIL_DIFF_COMPACITE = 0.015        # 0.015
-SEUIL_DIFF_PROXIMITE = 0.015        # 0.015
-SEUIL_DIFF_PRODUCTION = 0.015       # 0.015
+SEUIL_DIFF_COMPACITE = 0.015
+SEUIL_DIFF_PROXIMITE = 0.015
+SEUIL_DIFF_PRODUCTION = 0.015
 
 """ PROMETHEE PARAMETERS """
 WEIGHTS = [0.34, 0.33, 0.33]                # [0.34, 0.33, 0.33]
