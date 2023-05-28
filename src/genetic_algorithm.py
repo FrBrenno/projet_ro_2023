@@ -1,6 +1,7 @@
 import copy
+import multiprocessing
 import random
-from multiprocessing import Process, Manager
+from multiprocessing import Process, Manager, Pool
 
 from src.config import *
 from src.score import *
@@ -189,20 +190,19 @@ def boucle_selection(shared_list, population_avec_score_separe, start_index, end
 def selection_multi_processings(population_avec_score_separe):
     manager = Manager()
     shared_list = manager.list()
-    number_of_processings = 1
+    number_of_processings = 20
     population_size = len(population_avec_score_separe)
     iterations_per_processing = int(population_size / number_of_processings)
     processes = []
     for i in range(number_of_processings):
         start_index = i * iterations_per_processing
         end_index = (i + 1) * iterations_per_processing
-        if i == number_of_processings - 1:
-            end_index = population_size
-        p = Process(target=boucle_selection, args=(shared_list, population_avec_score_separe, start_index, end_index))
-        processes.append(p)
-        p.start()
+        processes.append(multiprocessing.Process(target=boucle_selection, args=(shared_list, population_avec_score_separe, start_index, end_index)))
+        processes[-1].start()
+
     for process in processes:
         process.join()
+        process.terminate()
     return shared_list
 
 def selection(population, population_size, COST_MAP, DISTANCE_MAP, PRODUCTION_MAP, USAGE_MAP):
