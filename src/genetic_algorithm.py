@@ -1,4 +1,5 @@
 import copy
+import os
 import random
 
 from src.config import *
@@ -8,7 +9,7 @@ from src.pareto import *
 import numpy as np
 
 from tqdm import tqdm
-
+import multiprocessing as mp
 
 
 """ UTILS FUNCTIONS """
@@ -178,7 +179,12 @@ def mutation_population(population, COST_MAP, USAGE_MAP):
     population.extend(nouvelle_solution_mutee)
     return population
 
-
+def compute_pareto_score(solution1, population_avec_score_separe, i):
+    print("process nb" + mp.current_process().name + "sol nb: " + str(i))
+    score_pareto = 0
+    for solution2 in population_avec_score_separe:
+        score_pareto += dominance(solution1, solution2)
+    return (solution1[0], score_pareto)
 def selection(population, population_size, COST_MAP, DISTANCE_MAP, PRODUCTION_MAP, USAGE_MAP):
     """ Select the best solutions of a set of solutions according to their score """
 
@@ -196,11 +202,17 @@ def selection(population, population_size, COST_MAP, DISTANCE_MAP, PRODUCTION_MA
     population_avec_score_separe = population_with_normalized_score(population, DISTANCE_MAP, PRODUCTION_MAP)
     # Trouver solutions dominantes par Pareto
     population_ac_score_pareto = []
-    for solution1 in population_avec_score_separe:
-        score_pareto = 0
-        for solution2 in population_avec_score_separe:
-            score_pareto += dominance(solution1, solution2)
-        population_ac_score_pareto.append((solution1[0], score_pareto))
+
+    shared_list = mp.Manager().list()
+
+    with mp.Pool() as pool:
+        args = [(solution1, population_avec_score_separe, i) for i, solution1 in enumerate(population_avec_score_separe)]
+        population_ac_score_pareto = pool.starmap(compute_pareto_score, args)
+        pool.close()
+
+
+
+
     # Trier les solutions par score de dominance de Pareto
     sorted_pareto_liste = sorted(population_ac_score_pareto, key=lambda x: x[1], reverse=True)
 

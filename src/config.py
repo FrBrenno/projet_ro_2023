@@ -6,9 +6,9 @@ import numpy as np
 
 
 # MAP PARAMETERS
-COST_MAP_PATH = "Cost_map.txt"
-PRODUCTION_MAP_PATH = "Production_map.txt"
-USAGE_MAP_PATH = "Usage_map.txt"
+COST_MAP_PATH = "Cost_map2.txt"
+PRODUCTION_MAP_PATH = "Production_map2.txt"
+USAGE_MAP_PATH = "Usage_map2.txt"
 MAP_COST_RATIO = 10000
 BUDGET = 500000
 

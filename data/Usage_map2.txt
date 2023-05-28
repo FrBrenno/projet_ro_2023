@@ -1,0 +1,70 @@
+         RR   CC                                                                     R                                 R                                             R    
+          RR CCCC                                                                   R                                  R                                             R    
+           RRRRRR                                                                RRR                                   R                                             RC   
+                 RRRR                                                           RR                                     R                                             RC   
+                    RR                                                          R                                      R                                             RC   
+                     R               CC                                         R                                       R                                            R    
+                     RRR             CC                                        RR                                       R                                            R    
+                       RRR          RR                                         R                                       R                                             R    
+                          RRRRRR  RRR                                         R                                         R                                            R    
+                               RRRR                                           R                                        R                                             R    
+                                R                                            RRR                                       R                                             R    
+                                R                                           RR RRRCCCC                                 R                                            R     
+                                 R                                        RR      CCC                                  R                                            R     
+                                 RR                                      RR          R                                  R                                          R      
+                                  RR                                   RR            R                                 CCC                                        R       
+                                   RR                                RRR             R                                                                           R        
+                    CCCC            R                             RRRR               R                                                                          R         
+                    CCCCRRRRRRRRRRRRRRR  RRRRRRRRRRRRRRRRRRRRRRRRRR                  R        CCC                                                              R          
+                    CCCC               R R                         R                 RRRRRRRRRCCC                                                             R           
+                                        RR                         RR                R        CCC                                                            R            
+                                         R                          R                R                                                                       R            
+                                         R                          RR               R                                                                       R            
+                                         R                           RRR             R                                                                       R            
+                                         R                             RR            R                                                                       R            
+                                         R                               RRR          R                                                                      R            
+                                         R                                  RR         R                                                                    R             
+                                         R                                   RRR       R                                                  CCCC             R              
+                                          R                                    RRR    R                                         RRRRRRRRRRRRRRRRRRRRRRRRRRR               
+                                          R                                      RRR R                                          R                                         
+                                          R                                        RR                                           R                                         
+                                          R                                          RR                                         R                                         
+                                          R                                            RR                                       R                                         
+                                          R                                             RR                                      R                                         
+                                         RR                                              RRR                                    R                                         
+                                       RRR                                                 RRR                                  R                                         
+                             RRRRRRRRRR                                                      RRR                                R                                         
+                      RRRRRRR                                                                  RRR                              R                                         
+      RRRRRRRRRRRRRRRR                                                                           RRR                            R                                         
+CCCCRRR                                                                                            RR                           R                                         
+CCCCR                                                                                               RRRRR                       R                                         
+ CCC                                                                                              RR    RRRR                    R                                         
+                                                                                                 R         RRR                  R                                   RRRRRR
+                                                                                               RR            RR                 R                               RRRR      
+                                                                                              R                RRR              R                        RRRRRRR          
+                                                                                          RRRR                    RRR           R                  RRRRRR                 
+                                                                                        RRR                         RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR                       
+                                                                                      RRR                                                                                 
+                           CC                                                        RR                                                                                   
+RRRRRRRRRRRRRRRRRRRRRRRRRRRRC                                                       RR                                                                                    
+                           CC                                                    RRR                                                                                      
+                             R                                                 RRR                                                                                        
+                              R                                               RR                                                                                          
+                               R                                            RRR                                                                                           
+                                R                                         RRR                                                                                             
+                                 RRR                                     RR                                                                                               
+                                    R                                   R                                                                                                 
+                                     RRRR                              R                                                                                             RRRRR
+                                         R                      CCC  RR                                                                                             R     
+                                          RRRRRRRRRRRRRRRRRRRRRRCCCRRR                                                                                             R      
+                                                                  RR                                                                                              R       
+                                                                   R                                                                                           RRR        
+                                                                   R                                                                                          R           
+                                                                   R                                                                                        RR            
+                                                                   R                                                                                       R              
+                                                                  RR                                                                                      R               
+                                                                  R                                                                                      R                
+                                                                  R                                                                                     R                 
+                                                                  R                                                                                    R                  
+                                                                 R                                                                                    R                   
+                                                                R                                                                                    R                    
