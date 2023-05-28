@@ -6,7 +6,7 @@ from src.promethee import compute_thresholds, promethee
 from src.pareto import get_pareto_frontier
 
 if __name__ == "__main__":
-
+    print(MAX_CPU)
     """1: Loading the problem's maps"""
     MAP_DIMENSION = get_map_dimension(COST_MAP_PATH)
     COST_MAP = load_map(COST_MAP_PATH, MAP_DIMENSION)

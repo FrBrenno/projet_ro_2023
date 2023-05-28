@@ -1,6 +1,6 @@
 import random
 import numpy as np
-
+import os
 """ PARAMETERS  """
 
 
@@ -20,12 +20,15 @@ np.random.seed(SEED)
 
 # ALGORITHM PARAMETERS
 """ GENETIC PARAMETERS """
-POPULATION_SIZE = 400   # 400
-NB_ITERATION = 600     # 600
+POPULATION_SIZE = 1000  # 400
+NB_ITERATION = 300     # 600
 
 SEUIL_DIFF_COMPACITE = 0.015 # 0.015
 SEUIL_DIFF_PROXIMITE = 0.015 # 0.015
 SEUIL_DIFF_PRODUCTION = 0.015 # 0.015
+
+#max cpu available
+MAX_CPU = os.cpu_count()
 
 """ PROMETHEE PARAMETERS """
 WEIGHTS = [0.34, 0.33, 0.33]                # [0.34, 0.33, 0.33]

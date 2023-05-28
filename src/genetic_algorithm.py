@@ -1,5 +1,6 @@
 import copy
 import random
+from multiprocessing import Process, Manager
 
 from src.config import *
 from src.score import *
@@ -179,6 +180,31 @@ def mutation_population(population, COST_MAP, USAGE_MAP):
     return population
 
 
+def boucle_selection(shared_list, population_avec_score_separe, start_index, end_index):
+    for i in range(start_index, end_index):
+        score_pareto = 0
+        for solution2 in population_avec_score_separe:
+            score_pareto += dominance(population_avec_score_separe[i], solution2)
+        shared_list.append((population_avec_score_separe[i][0], score_pareto))
+def selection_multi_processings(population_avec_score_separe):
+    manager = Manager()
+    shared_list = manager.list()
+    number_of_processings = 1
+    population_size = len(population_avec_score_separe)
+    iterations_per_processing = int(population_size / number_of_processings)
+    processes = []
+    for i in range(number_of_processings):
+        start_index = i * iterations_per_processing
+        end_index = (i + 1) * iterations_per_processing
+        if i == number_of_processings - 1:
+            end_index = population_size
+        p = Process(target=boucle_selection, args=(shared_list, population_avec_score_separe, start_index, end_index))
+        processes.append(p)
+        p.start()
+    for process in processes:
+        process.join()
+    return shared_list
+
 def selection(population, population_size, COST_MAP, DISTANCE_MAP, PRODUCTION_MAP, USAGE_MAP):
     """ Select the best solutions of a set of solutions according to their score """
 
@@ -195,12 +221,8 @@ def selection(population, population_size, COST_MAP, DISTANCE_MAP, PRODUCTION_MA
     # Réévaluer la population actuelle
     population_avec_score_separe = population_with_normalized_score(population, DISTANCE_MAP, PRODUCTION_MAP)
     # Trouver solutions dominantes par Pareto
-    population_ac_score_pareto = []
-    for solution1 in population_avec_score_separe:
-        score_pareto = 0
-        for solution2 in population_avec_score_separe:
-            score_pareto += dominance(solution1, solution2)
-        population_ac_score_pareto.append((solution1[0], score_pareto))
+
+    population_ac_score_pareto = selection_multi_processings(population_avec_score_separe)
     # Trier les solutions par score de dominance de Pareto
     sorted_pareto_liste = sorted(population_ac_score_pareto, key=lambda x: x[1], reverse=True)
 
@@ -210,6 +232,9 @@ def selection(population, population_size, COST_MAP, DISTANCE_MAP, PRODUCTION_MA
 
         sorted_liste.append(solution3[0])
     return sorted_liste[:population_size]
+
+
+
 
 
 def genetic_algorithm(initial_population_size, iteration, COST_MAP, DISTANCE_MAP, USAGE_MAP, PRODUCTION_MAP):
